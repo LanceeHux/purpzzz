@@ -845,7 +845,7 @@ async function newEntry(){
     mood: "Calm",
     labels: "",
     body: "",
-    updatedAt: Date.now()
+    updated_at: Date.now()
   };
 
   await apiSave(e);
@@ -871,7 +871,7 @@ async function saveCurrent(fromMobile=false){
     mood: e.mood,
     labels: e.labels,
     body: e.body,
-    updatedAt: e.updated_at ?? Date.now()
+    updated_at: e.updated_at ?? Date.now()
   });
 
   entries = await apiList(searchTerm);
