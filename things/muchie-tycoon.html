@@ -1,0 +1,1227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PURPZ • Muchie Tycoon</title>
+  <style>
+      /* ===== Unlock overlay ===== */
+.unlockBack{
+  position:fixed;
+  inset:0;
+  display:grid;
+  place-items:center;
+  background: rgba(0,0,0,.55);
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .18s ease;
+  z-index:9999;
+}
+
+.unlockBack.open{
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* quick screen flash */
+.unlockBack.open::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: radial-gradient(circle at 50% 40%, rgba(168,85,247,.35), transparent 55%);
+  animation: screenFlash 0.55s ease-out;
+}
+
+@keyframes screenFlash{
+  0%{ opacity:0; }
+  30%{ opacity:1; }
+  100%{ opacity:0; }
+}
+
+.unlockCard{
+  position:relative;
+  width:min(420px, 92vw);
+  border-radius: 22px;
+  border:1px solid rgba(255,255,255,.14);
+  background: linear-gradient(180deg, rgba(23,27,46,.96), rgba(23,27,46,.86));
+  box-shadow: 0 25px 80px rgba(0,0,0,.60);
+  overflow:hidden;
+  padding: 16px;
+  text-align:center;
+  transform: translateY(10px) scale(.98);
+  opacity: 0;
+}
+
+.unlockBack.open .unlockCard{
+  animation: unlockPop 0.7s cubic-bezier(.2,1,.2,1) forwards;
+}
+
+@keyframes unlockPop{
+  0%{ opacity:0; transform: translateY(12px) scale(.96); }
+  60%{ opacity:1; transform: translateY(0) scale(1.02); }
+  100%{ opacity:1; transform: translateY(0) scale(1); }
+}
+
+/* glow blob behind */
+.unlockGlow{
+  position:absolute;
+  inset:-30%;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(168,85,247,.35), transparent 55%),
+    radial-gradient(circle at 35% 60%, rgba(124,58,237,.28), transparent 60%),
+    radial-gradient(circle at 70% 30%, rgba(236,72,153,.18), transparent 55%);
+  filter: blur(10px);
+  opacity: 0;
+  animation: glowPulse 1.2s ease-in-out infinite;
+  pointer-events:none;
+}
+
+.unlockBack.open .unlockGlow{
+  opacity:1;
+}
+
+@keyframes glowPulse{
+  0%,100%{ transform: scale(1); opacity:.95; }
+  50%{ transform: scale(1.04); opacity:1; }
+}
+
+.unlockCard img{
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 20px;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+  position:relative;
+  z-index:2;
+}
+
+.unlockTitle{
+  margin-top: 12px;
+  font-weight: 1000;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-size: 14px;
+  color: rgba(245,240,255,.95);
+  position:relative;
+  z-index:2;
+}
+
+.unlockText{
+  margin-top: 8px;
+  color: rgba(214,201,255,.95);
+  font-size: 14px;
+  line-height: 1.35;
+  position:relative;
+  z-index:2;
+}
+
+/* sparkle dots */
+.unlockCard::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,.18) 0 2px, transparent 3px),
+    radial-gradient(circle at 72% 28%, rgba(255,255,255,.14) 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 70%, rgba(255,255,255,.12) 0 2px, transparent 3px);
+  opacity:.8;
+  pointer-events:none;
+}
+      .outfitRow{
+  display:grid;
+  grid-template-columns: 90px 1fr;
+  gap:12px;
+  align-items:center;
+}
+
+.outfitThumb{
+  width:90px;
+  height:90px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  overflow:hidden;
+  display:grid;
+  place-items:center;
+  box-shadow: 0 8px 18px rgba(0,0,0,.25);
+}
+
+.outfitThumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.outfitInfo{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+    :root{
+      --bg:#0b0620;
+      --panel:#140b2e;
+      --panel2:#1b0f3a;
+      --ink:#f5f0ff;
+      --muted:#d6c9ff;
+      --line:rgba(255,255,255,.10);
+
+      --accent:#a855f7;
+      --accent2:#7c3aed;
+      --accent3:#ec4899;
+
+      --good:#58d6ff;
+      --bad:#ff5b7a;
+
+      --shadow: 0 20px 50px rgba(0,0,0,.50);
+      --radius: 18px;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ overflow-x:hidden; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1100px 700px at 12% 12%, rgba(168,85,247,.35), transparent 60%),
+        radial-gradient(1000px 700px at 90% 18%, rgba(124,58,237,.25), transparent 58%),
+        radial-gradient(900px 700px at 55% 115%, rgba(236,72,153,.14), transparent 55%),
+        linear-gradient(160deg, #09031a, #0b0620 40%, #12062a);
+      min-height:100vh;
+    }
+
+    header{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(15,18,32,.85), rgba(15,18,32,.55));
+      border-bottom:1px solid var(--line);
+    }
+    .topbar{
+      max-width:1100px;
+      margin:0 auto;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{ display:flex; align-items:center; gap:14px; letter-spacing:.28em; text-transform:uppercase; }
+    .brandTag{
+      background:#fff; color:#000;
+      padding:6px 14px;
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.28em;
+    }
+    .brand small{
+      color:var(--ink);
+      font-weight:800;
+      font-size:14px;
+      letter-spacing:.38em;
+      opacity:.95;
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 16px 110px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .panel{
+      position:relative;
+      background: linear-gradient(180deg, rgba(23,27,46,.92), rgba(23,27,46,.75));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:-40px -30px -40px -30px;
+      background: linear-gradient(125deg, transparent 0 42%, rgba(255,255,255,.06) 42% 43.2%, transparent 43.2% 100%);
+      pointer-events:none;
+      opacity:.65;
+    }
+    .panelInner{ position:relative; padding:14px; }
+
+    .gameHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding:6px 6px 10px;
+      border-bottom:1px solid var(--line);
+    }
+    .titleBox h1{
+      margin:0;
+      font-size:24px;
+      letter-spacing:.2px;
+    }
+    .meta{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+    .hud{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+    .chip{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      padding:10px 12px;
+      border-radius:999px;
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .chip b{ color:var(--ink); }
+
+    .grid{
+      padding:14px 6px 8px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+
+    .card{
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(27,15,58,.78), rgba(27,15,58,.52));
+      border-radius: 16px;
+      padding:12px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .cardTitle{
+      margin:0 0 10px;
+      font-size:12px;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    .marketList, .invList, .shopList{
+      display:grid;
+      gap:10px;
+      max-height: 320px;
+      overflow:auto;
+      scrollbar-width: thin;
+      padding-right: 4px;
+    }
+    .marketList::-webkit-scrollbar,
+    .invList::-webkit-scrollbar,
+    .shopList::-webkit-scrollbar{ width:8px; }
+    .marketList::-webkit-scrollbar-thumb,
+    .invList::-webkit-scrollbar-thumb,
+    .shopList::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.10); border-radius:999px; }
+
+    .itemRow{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      padding:10px;
+      display:grid;
+      gap:8px;
+    }
+    .rowTop{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .name{
+      font-weight:900;
+      font-size:14px;
+      color: rgba(245,240,255,.95);
+      line-height:1.2;
+    }
+    .tag{
+      font-size:12px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      white-space:nowrap;
+      height: fit-content;
+    }
+    .desc{
+      color: rgba(214,201,255,.85);
+      font-size: 13px;
+      line-height:1.35;
+      margin:0;
+    }
+    .mini{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      color: rgba(214,201,255,.9);
+      font-size: 12.5px;
+    }
+
+    .btnRow{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--ink);
+      padding:9px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:transform .12s ease, background .12s ease;
+      user-select:none;
+      font-weight:900;
+      font-size: 13px;
+    }
+    .btn:hover{ background:rgba(255,255,255,.09); }
+    .btn:active{ transform:scale(.98); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(168,85,247,.92));
+      border-color: rgba(255,255,255,.16);
+      color:#0b061a;
+    }
+    .btn.good{
+      background: rgba(88,214,255,.10);
+      border-color: rgba(88,214,255,.35);
+    }
+    .btn.bad{
+      background: rgba(255,91,122,.10);
+      border-color: rgba(255,91,122,.35);
+    }
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .controls{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      border-top: 1px solid var(--line);
+      margin-top: 12px;
+      padding:12px 6px 6px;
+    }
+    .hint{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+      opacity:.95;
+    }
+
+    /* Muchie preview */
+    .muchieBox{
+      display:grid;
+      grid-template-columns: 92px 1fr;
+      gap:12px;
+      align-items:center;
+    }
+    .muchieAvatar{
+      width:92px; height:92px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      overflow:hidden;
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+      display:grid;
+      place-items:center;
+    }
+    .muchieAvatar img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display:block;
+    }
+    .bubble{
+      padding:10px 12px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      color: rgba(245,240,255,.92);
+      font-size: 13.5px;
+      line-height: 1.35;
+      min-height: 44px;
+    }
+    .bubble strong{ color: var(--ink); }
+
+    .side h2{
+      margin:6px 4px 10px;
+      font-size:14px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    .tinyRow{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 10px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(245,240,255,.90);
+      font-size: 13.5px;
+      margin-top: 10px;
+    }
+    .tinyRow small{ color: var(--muted); }
+
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+      .grid{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brandTag">PURPZ</div>
+      <small>Muchie Tycoon</small>
+    </div>
+    <div class="chip" title="Loop">
+      <span aria-hidden="true">🛒</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Left: Game -->
+  <section class="panel">
+    <div class="panelInner">
+      <div class="gameHeader">
+        <div class="titleBox">
+          <h1>Muchie Tycoon</h1>
+          <div class="meta">Flip items for profit. Save up to buy outfits for Muchie.</div>
+        </div>
+        <div class="hud">
+          <div class="chip">Cash: <b id="cash">$0</b></div>
+          <div class="chip">Savings: <b id="savings">$0</b></div>
+          <div class="chip">Reputation: <b id="rep">0</b></div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Market -->
+        <div class="card">
+          <div class="cardTitle">Market (refreshes)</div>
+          <div class="marketList" id="marketList"></div>
+          <div class="controls">
+            <div class="hint">Tip: better rep = better deals.</div>
+            <div class="btnRow">
+              <button class="btn" id="refreshBtn">Refresh Market</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventory -->
+        <div class="card">
+          <div class="cardTitle">Inventory</div>
+          <div class="invList" id="invList"></div>
+          <div class="controls">
+            <div class="hint" id="invHint">Buy something first.</div>
+            <div class="btnRow">
+              <button class="btn good" id="depositBtn">Deposit $50</button>
+              <button class="btn bad" id="withdrawBtn">Withdraw $50</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Outfits shop -->
+        <div class="card" style="grid-column: 1 / -1;">
+          <div class="cardTitle">Muchie Outfit Shop</div>
+
+          <div class="muchieBox">
+            <!-- Put your base Muchie image here:
+                 /images/muchie.png
+                 and outfit images:
+                 /images/muchie_tech.png
+                 /images/muchie_galaxy.png
+                 /images/muchie_mechanic.png
+                 /images/muchie_cozy.png
+            -->
+            <div class="muchieAvatar">
+              <img id="muchieImg" src="images/muchie.png" alt="Muchie preview" />
+            </div>
+            <div class="bubble" id="muchieText"><strong>Muchie:</strong> save some savings, Big Lily! buy me some outfit :></div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="shopList" id="shopList"></div>
+
+          <div class="controls">
+            <div class="hint" id="shopHint">Outfits are bought using Savings.</div>
+            <div class="btnRow">
+              <button class="btn danger" id="wipeBtn">Wipe Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Right: Stats -->
+  <aside class="panel side">
+    <div class="panelInner">
+      <h2>Stats</h2>
+      <div class="card">
+        <div class="tinyRow"><span>Total profit</span><small id="profit">$0</small></div>
+        <div class="tinyRow"><span>Items sold</span><small id="sold">0</small></div>
+        <div class="tinyRow"><span>Upgrades used</span><small id="upgrades">0</small></div>
+        <div class="tinyRow"><span>Current outfit</span><small id="outfitName">Base</small></div>
+
+        <div style="height:12px"></div>
+
+        <div class="cardTitle">How to win</div>
+        <p class="desc" style="margin:0">
+          Build Savings → buy outfits → collect them all. <br/>
+          Pro-tip: “Improve” boosts resale value, but costs cash.
+        </p>
+      </div>
+    </div>
+  </aside>
+</main>
+<!-- Unlock Overlay -->
+<div class="unlockBack" id="unlockBack" aria-hidden="true">
+  <div class="unlockCard" role="dialog" aria-modal="true">
+    <div class="unlockGlow"></div>
+    <img id="unlockImg" alt="Unlocked outfit" />
+    <div class="unlockTitle" id="unlockTitle">Unlocked!</div>
+    <div class="unlockText" id="unlockText">Muchie: THANKYOUU, it fits well!</div>
+  </div>
+</div>
+<script>
+(() => {
+  // =========================
+  // Muchie Tycoon (MVP)
+  // =========================
+
+  // ---------- Helpers ----------
+  const $ = (s) => document.querySelector(s);
+  const money = (n) => "$" + Math.floor(n).toLocaleString();
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const uid = () => Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+
+  // ---------- DOM ----------
+  const cashEl = $("#cash");
+  const savingsEl = $("#savings");
+  const repEl = $("#rep");
+
+  const profitEl = $("#profit");
+  const soldEl = $("#sold");
+  const upgradesEl = $("#upgrades");
+  const outfitNameEl = $("#outfitName");
+
+  const marketList = $("#marketList");
+  const invList = $("#invList");
+  const invHint = $("#invHint");
+
+  const refreshBtn = $("#refreshBtn");
+  const depositBtn = $("#depositBtn");
+  const withdrawBtn = $("#withdrawBtn");
+  const wipeBtn = $("#wipeBtn");
+
+  const shopList = $("#shopList");
+  const shopHint = $("#shopHint");
+  const muchieImg = $("#muchieImg");
+  const muchieText = $("#muchieText");
+    
+    const unlockBack = document.getElementById("unlockBack");
+const unlockImg = document.getElementById("unlockImg");
+const unlockTitle = document.getElementById("unlockTitle");
+const unlockText = document.getElementById("unlockText");
+
+  // ---------- Muchie lines ----------
+  const muchieLines = {
+    buy: [
+      "Okay, good buy. We can flip this.",
+      "Nice. But don’t overspend, ha?",
+      "Smart purchase. Muchie approves 🐾"
+    ],
+    noCash: [
+      "Uh oh— not enough cash. Let’s sell something first.",
+      "We’re broke right now 😭 flip first, then buy.",
+      "Hold on big sibling… we need more cash."
+    ],
+    improve: [
+      "Upgraded! This will sell better.",
+      "Muchie: polish it! Make it look premium.",
+      "Nice improvement. Value goes up!"
+    ],
+    use: [
+      "You used it. Utility > profit sometimes ✨",
+      "Okay! Using it gives you small reputation.",
+      "Muchie says: tools help you grow too."
+    ],
+    sell: [
+      "Cha-ching! Profit secured 💸",
+      "Nice flip! That’s discipline.",
+      "Good sale. We’re getting closer to outfits!"
+    ],
+    deposit: [
+      "Savings secured. Proud Muchie.",
+      "Good job saving. Future-you will smile.",
+      "Deposit done. No impulse buys!"
+    ],
+    withdraw: [
+      "Okay withdraw… but be careful.",
+      "Use it wisely, big sibling.",
+      "Withdraw done. Let’s make it back."
+    ],
+    outfit: [
+      "OMG outfit unlocked!! Muchie is dripped out.",
+      "YAYYY new look! Thank you big sibling 🥺",
+      "We did it! Outfit time!"
+    ],
+    wipe: [
+      "Save wiped. Fresh start. No shame.",
+      "Okay reset. We go again gently.",
+      "New run! This time we’re smarter."
+    ]
+  };
+
+  function say(kind){
+    const msg = pick(muchieLines[kind] || ["..."]);
+    muchieText.innerHTML = `<strong>Muchie:</strong> ${msg}`;
+  }
+    function showUnlockOverlay(outfit){
+  unlockImg.src = outfit.img;
+  unlockTitle.textContent = "Unlocked!";
+  unlockText.textContent = `Muchie: THANKYOUU, it fits well!`;
+
+  unlockBack.classList.add("open");
+  unlockBack.setAttribute("aria-hidden","false");
+
+  // auto close
+  setTimeout(() => {
+    unlockBack.classList.remove("open");
+    unlockBack.setAttribute("aria-hidden","true");
+  }, 1600);
+}
+
+// allow click to close early
+unlockBack.addEventListener("click", () => {
+  unlockBack.classList.remove("open");
+  unlockBack.setAttribute("aria-hidden","true");
+});
+  // ---------- Items catalog ----------
+  // Each category: baseCost range, baseValue range, improvement multiplier, improveCost ratio
+  const CATALOG = [
+    { name:"Old Phone", cat:"Gadget", baseCost:[40,120], baseValue:[70,170], improveMult:1.25, improveCostRate:0.25, useRep:+2 },
+    { name:"Keyboard", cat:"Gadget", baseCost:[25,90], baseValue:[45,130], improveMult:1.22, improveCostRate:0.22, useRep:+1 },
+    { name:"Headphones", cat:"Gadget", baseCost:[35,110], baseValue:[60,160], improveMult:1.20, improveCostRate:0.24, useRep:+1 },
+
+    { name:"Vintage Jacket", cat:"Fashion", baseCost:[30,95], baseValue:[55,150], improveMult:1.30, improveCostRate:0.28, useRep:+1 },
+    { name:"Sneakers", cat:"Fashion", baseCost:[35,110], baseValue:[70,170], improveMult:1.27, improveCostRate:0.26, useRep:+1 },
+
+    { name:"Desk Lamp", cat:"Home", baseCost:[20,85], baseValue:[40,140], improveMult:1.20, improveCostRate:0.20, useRep:+1 },
+    { name:"Mini Shelf", cat:"Home", baseCost:[25,100], baseValue:[50,160], improveMult:1.22, improveCostRate:0.22, useRep:+1 },
+
+    { name:"Rare Sticker Pack", cat:"Collectible", baseCost:[10,60], baseValue:[25,120], improveMult:1.40, improveCostRate:0.15, useRep:+2 },
+    { name:"Trading Card", cat:"Collectible", baseCost:[18,80], baseValue:[35,150], improveMult:1.35, improveCostRate:0.18, useRep:+2 },
+  ];
+
+  // Random market “deal” modifier based on reputation
+  function repDiscount(rep){
+    // Higher rep slightly improves buy prices (discount) and sell prices (demand)
+    // rep 0..100 -> discount 0..10%
+    return clamp(rep / 1000, 0, 0.10);
+  }
+
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+  function makeMarketItem(){
+    const base = pick(CATALOG);
+    const cost = randInt(base.baseCost[0], base.baseCost[1]);
+    const val  = randInt(base.baseValue[0], base.baseValue[1]);
+
+    // market randomness: sometimes overpriced, sometimes steal
+    const mood = pick(["steal","fair","fair","fair","overpriced"]);
+    let price = cost;
+    if(mood === "steal") price = Math.floor(cost * (0.72 + Math.random()*0.10));
+    if(mood === "overpriced") price = Math.floor(cost * (1.15 + Math.random()*0.15));
+
+    return {
+      mid: uid(),
+      baseName: base.name,
+      cat: base.cat,
+      mood,
+      buyPrice: price,
+      baseValue: val,
+      improveMult: base.improveMult,
+      improveCostRate: base.improveCostRate,
+      useRep: base.useRep
+    };
+  }
+
+  // ---------- Outfits ----------
+  // You provide these images in /images/
+  // If an image is missing, the preview will show broken icon — so make sure filenames match.
+const OUTFITS = [
+  {
+    id: "base",
+    name: "Base Muchie",
+    price: 0,
+    thumb: "images/muchie.png",
+    img: "images/muchie.png"
+  },
+  {
+    id: "tech",
+    name: "Tech Muchie",
+    price: 600,
+    thumb: "images/tech_outfit.png",     // ✅ shop picture
+    img: "images/muchie_tech.png"        // ✅ Muchie wearing
+  },
+  {
+    id: "galaxy",
+    name: "Galaxy Muchie",
+    price: 1200,
+    thumb: "images/galaxy_outfit.png",   // ✅ shop picture
+    img: "images/muchie_galaxy.png"      // ✅ Muchie wearing
+  },
+  {
+    id: "mechanic",
+    name: "Mechanic Muchie",
+    price: 1800,
+    thumb: "images/mechanic_outfit.png", // ✅ shop picture (rename as needed)
+    img: "images/muchie_mechanic.png"    // ✅ Muchie wearing
+  },
+  {
+    id: "cozy",
+    name: "Cozy Muchie",
+    price: 2500,
+    thumb: "images/cozy_outfit.png",     // ✅ shop picture (rename as needed)
+    img: "images/muchie_cozy.png"        // ✅ Muchie wearing
+  },
+];
+
+  // ---------- Save ----------
+  const KEY = "purpz_muchie_tycoon_v1";
+
+  const defaultState = () => ({
+    cash: 180,
+    savings: 10000,
+    rep: 0,
+
+    profit: 0,
+    sold: 0,
+    upgrades: 0,
+
+    market: [],
+    inv: [],
+
+    ownedOutfits: ["base"],
+    equippedOutfit: "base",
+
+    lastMarketAt: 0
+  });
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      const obj = raw ? JSON.parse(raw) : null;
+      return obj ? obj : defaultState();
+    }catch{
+      return defaultState();
+    }
+  }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+  let state = load();
+
+  // ---------- Market logic ----------
+  function refreshMarket(force=false){
+    const now = Date.now();
+    // soft cooldown: 20s unless force is true
+    if(!force && now - state.lastMarketAt < 20000) return;
+
+    const count = 6;
+    const deals = [];
+    for(let i=0;i<count;i++) deals.push(makeMarketItem());
+
+    state.market = deals;
+    state.lastMarketAt = now;
+    save();
+    renderAll();
+  }
+
+  function buyItem(mid){
+    const it = state.market.find(x => x.mid === mid);
+    if(!it) return;
+
+    const disc = repDiscount(state.rep);
+    const finalPrice = Math.max(1, Math.floor(it.buyPrice * (1 - disc)));
+
+    if(state.cash < finalPrice){
+      say("noCash");
+      return;
+    }
+
+    state.cash -= finalPrice;
+    state.rep = clamp(state.rep + 1, 0, 999); // small rep for participating
+
+    // add to inventory as a “owned item”
+    state.inv.push({
+      id: uid(),
+      name: it.baseName,
+      cat: it.cat,
+      boughtFor: finalPrice,
+      value: it.baseValue,
+      improved: false,
+      used: false
+    });
+
+    // remove from market
+    state.market = state.market.filter(x => x.mid !== mid);
+
+    say("buy");
+    save();
+    renderAll();
+  }
+
+  function improveItem(id){
+    const it = state.inv.find(x => x.id === id);
+    if(!it || it.improved || it.used) return;
+
+    // improve costs % of current value
+    const base = CATALOG.find(c => c.name === it.name) || { improveMult:1.2, improveCostRate:0.25 };
+    const cost = Math.max(5, Math.floor(it.value * base.improveCostRate));
+
+    if(state.cash < cost){
+      say("noCash");
+      return;
+    }
+
+    state.cash -= cost;
+    it.value = Math.floor(it.value * base.improveMult);
+    it.improved = true;
+
+    state.upgrades += 1;
+    state.rep = clamp(state.rep + 2, 0, 999);
+
+    say("improve");
+    save();
+    renderAll();
+  }
+
+  function useItem(id){
+    const it = state.inv.find(x => x.id === id);
+    if(!it || it.used) return;
+
+    // using item removes it, but gives rep (like you “kept it”)
+    const base = CATALOG.find(c => c.name === it.name) || { useRep: 1 };
+    state.rep = clamp(state.rep + (base.useRep || 1), 0, 999);
+
+    // tiny happiness: add a tiny savings bonus sometimes
+    if(Math.random() < 0.25){
+      state.savings += 10;
+      say("deposit");
+    }else{
+      say("use");
+    }
+
+    state.inv = state.inv.filter(x => x.id !== id);
+    save();
+    renderAll();
+  }
+
+  function sellItem(id){
+    const it = state.inv.find(x => x.id === id);
+    if(!it) return;
+
+    // demand bonus from rep (rep up to 999 -> up to +20%)
+    const demandBonus = clamp(state.rep / 5000, 0, 0.20);
+    const randomSwing = 0.92 + Math.random()*0.18; // 0.92..1.10
+    const sellPrice = Math.max(1, Math.floor(it.value * (1 + demandBonus) * randomSwing));
+
+    state.cash += sellPrice;
+
+    const profit = sellPrice - it.boughtFor;
+    state.profit += profit;
+    state.sold += 1;
+
+    // rep moves based on profit
+    if(profit > 0) state.rep = clamp(state.rep + 2, 0, 999);
+    if(profit <= 0) state.rep = clamp(state.rep + 0, 0, 999); // no penalty for friendly game
+
+    state.inv = state.inv.filter(x => x.id !== id);
+
+    say("sell");
+    save();
+    renderAll();
+  }
+
+  // ---------- Banking ----------
+  function deposit(amount){
+    if(state.cash < amount) { say("noCash"); return; }
+    state.cash -= amount;
+    state.savings += amount;
+    say("deposit");
+    save();
+    renderAll();
+  }
+
+  function withdraw(amount){
+    if(state.savings < amount) return;
+    state.savings -= amount;
+    state.cash += amount;
+    say("withdraw");
+    save();
+    renderAll();
+  }
+
+  // ---------- Outfits ----------
+  function buyOutfit(outfitId){
+    const o = OUTFITS.find(x => x.id === outfitId);
+    if(!o) return;
+    if(state.ownedOutfits.includes(o.id)) return;
+
+    if(state.savings < o.price){
+      say("noCash");
+      return;
+    }
+
+    state.savings -= o.price;
+    state.ownedOutfits.push(o.id);
+    state.equippedOutfit = o.id;
+
+    muchieImg.src = o.img;
+      showUnlockOverlay(o);  
+    say("outfit");
+    save();
+    renderAll();
+  }
+
+  function equipOutfit(outfitId){
+    const o = OUTFITS.find(x => x.id === outfitId);
+    if(!o) return;
+    if(!state.ownedOutfits.includes(o.id)) return;
+
+    state.equippedOutfit = o.id;
+    muchieImg.src = o.img;
+    save();
+    renderAll();
+  }
+
+  // ---------- Render ----------
+  function renderHUD(){
+    cashEl.textContent = money(state.cash);
+    savingsEl.textContent = money(state.savings);
+    repEl.textContent = String(state.rep);
+
+    profitEl.textContent = money(state.profit);
+    soldEl.textContent = String(state.sold);
+    upgradesEl.textContent = String(state.upgrades);
+
+    const eq = OUTFITS.find(o => o.id === state.equippedOutfit) || OUTFITS[0];
+    outfitNameEl.textContent = eq.name.replace("Muchie","").trim() || "Base";
+    muchieImg.src = eq.img;
+  }
+
+  function renderMarket(){
+    if(state.market.length === 0){
+      marketList.innerHTML = `
+        <div class="itemRow">
+          <div class="rowTop">
+            <div class="name">No deals right now</div>
+            <span class="tag">Refresh</span>
+          </div>
+          <p class="desc">Tap “Refresh Market”. Better rep = better deals.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const disc = repDiscount(state.rep);
+
+    marketList.innerHTML = state.market.map(it => {
+      const moodTag = it.mood === "steal" ? "STEAL" : it.mood === "overpriced" ? "PRICEY" : "FAIR";
+      const price = Math.max(1, Math.floor(it.buyPrice * (1 - disc)));
+
+      return `
+        <div class="itemRow">
+          <div class="rowTop">
+            <div>
+              <div class="name">${it.baseName}</div>
+              <div class="mini">
+                <span>${it.cat}</span>
+                <span>Buy: <b style="color:var(--good)">${money(price)}</b></span>
+              </div>
+            </div>
+            <span class="tag">${moodTag}</span>
+          </div>
+          <p class="desc">Est. resale value: ${money(it.baseValue)} (improve to boost)</p>
+          <div class="btnRow">
+            <button class="btn primary" onclick="window.__buy('${it.mid}')">Buy</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderInv(){
+    if(state.inv.length === 0){
+      invList.innerHTML = `
+        <div class="itemRow">
+          <div class="rowTop">
+            <div class="name">Inventory empty</div>
+            <span class="tag">Buy first</span>
+          </div>
+          <p class="desc">Buy items from the Market, then improve or sell.</p>
+        </div>
+      `;
+      invHint.textContent = "Buy something first.";
+      return;
+    }
+
+    invHint.textContent = "Improve to raise value. Sell to gain cash. Use to gain reputation.";
+
+    invList.innerHTML = state.inv.map(it => {
+      const flags = [
+        it.improved ? "Improved" : null,
+        it.used ? "Used" : null
+      ].filter(Boolean).join(" • ");
+
+      const flagTag = flags ? `<span class="tag">${flags}</span>` : `<span class="tag">${it.cat}</span>`;
+      const profitNow = (it.value - it.boughtFor);
+      const profitColor = profitNow >= 0 ? "var(--good)" : "var(--bad)";
+
+      return `
+        <div class="itemRow">
+          <div class="rowTop">
+            <div>
+              <div class="name">${it.name}</div>
+              <div class="mini">
+                <span>Bought: ${money(it.boughtFor)}</span>
+                <span>Value: <b style="color:var(--good)">${money(it.value)}</b></span>
+              </div>
+            </div>
+            ${flagTag}
+          </div>
+          <p class="desc">If sold now: <b style="color:${profitColor}">${profitNow>=0?"+":""}${money(profitNow)}</b> (approx)</p>
+          <div class="btnRow">
+            <button class="btn good" onclick="window.__improve('${it.id}')" ${it.improved||it.used ? "disabled":""}>Improve</button>
+            <button class="btn" onclick="window.__use('${it.id}')" ${it.used ? "disabled":""}>Use</button>
+            <button class="btn primary" onclick="window.__sell('${it.id}')">Sell</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderShop(){
+  shopList.innerHTML = OUTFITS.map(o => {
+    const owned = state.ownedOutfits.includes(o.id);
+    const equipped = state.equippedOutfit === o.id;
+
+    let action = "";
+    if(o.id === "base"){
+      action = equipped
+        ? `<button class="btn" disabled>Equipped</button>`
+        : `<button class="btn" onclick="window.__equip('${o.id}')">Equip</button>`;
+    }else if(!owned){
+      const canBuy = state.savings >= o.price;
+      action = `<button class="btn primary" onclick="window.__buyOutfit('${o.id}')" ${canBuy ? "" : "disabled"}>Buy</button>`;
+    }else{
+      action = equipped
+        ? `<button class="btn" disabled>Equipped</button>`
+        : `<button class="btn" onclick="window.__equip('${o.id}')">Equip</button>`;
+    }
+
+    const tag = owned ? (equipped ? "OWNED • ON" : "OWNED") : "LOCKED";
+    const price = o.price === 0 ? "Free" : money(o.price);
+
+    return `
+      <div class="itemRow outfitRow">
+        <div class="outfitThumb">
+          <img src="${o.thumb || o.img}" alt="${o.name}" />
+        </div>
+
+        <div class="outfitInfo">
+          <div class="rowTop">
+            <div>
+              <div class="name">${o.name}</div>
+              <div class="mini">
+                <span>Cost (Savings): <b style="color:var(--good)">${price}</b></span>
+              </div>
+            </div>
+            <span class="tag">${tag}</span>
+          </div>
+
+          <div class="btnRow">
+            <button class="btn" onclick="window.__preview('${o.id}')">Preview</button>
+            ${action}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+  function renderAll(){
+    renderHUD();
+    renderMarket();
+    renderInv();
+    renderShop();
+  }
+
+  // ---------- Global hooks for inline onclick ----------
+  window.__buy = buyItem;
+  window.__sell = sellItem;
+  window.__improve = improveItem;
+  window.__use = useItem;
+  window.__buyOutfit = buyOutfit;
+  window.__equip = equipOutfit;
+
+  window.__preview = (id) => {
+    const o = OUTFITS.find(x => x.id === id);
+    if(!o) return;
+    muchieImg.src = o.img;
+    muchieText.innerHTML = `<strong>Muchie:</strong> Previewing <b>${o.name}</b>… cute right?`;
+  };
+
+  // ---------- Buttons ----------
+  refreshBtn.addEventListener("click", () => refreshMarket(true));
+  depositBtn.addEventListener("click", () => deposit(50));
+  withdrawBtn.addEventListener("click", () => withdraw(50));
+
+  wipeBtn.addEventListener("click", () => {
+    const ok = confirm("Wipe save data? (cash, inventory, outfits)");
+    if(!ok) return;
+    state = defaultState();
+    save();
+    say("wipe");
+    refreshMarket(true);
+  });
+
+  // ---------- Init ----------
+  if(!state.market || state.market.length === 0) refreshMarket(true);
+  renderAll();
+})();
+</script>
+</body>
+</html>

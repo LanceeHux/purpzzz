@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PURPZ • Calendar</title>
+  <style>
+    :root{
+      --bg:#0b0620;
+      --panel:#140b2e;
+      --panel2:#1b0f3a;
+      --ink:#f5f0ff;
+      --muted:#d6c9ff;
+      --line:rgba(255,255,255,.10);
+      --accent:#a855f7;
+      --accent2:#7c3aed;
+      --accent3:#ec4899;
+      --good:#58d6ff;
+      --bad:#ff5b7a;
+      --shadow: 0 20px 50px rgba(0,0,0,.50);
+      --radius: 18px;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ overflow-x:hidden; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1100px 700px at 12% 12%, rgba(168,85,247,.35), transparent 60%),
+        radial-gradient(1000px 700px at 90% 18%, rgba(124,58,237,.25), transparent 58%),
+        radial-gradient(900px 700px at 55% 115%, rgba(236,72,153,.14), transparent 55%),
+        linear-gradient(160deg, #09031a, #0b0620 40%, #12062a);
+      min-height:100vh;
+    }
+
+    header{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(15,18,32,.85), rgba(15,18,32,.55));
+      border-bottom:1px solid var(--line);
+    }
+    .topbar{
+      max-width:1100px;
+      margin:0 auto;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{ display:flex; align-items:center; gap:14px; letter-spacing:.28em; text-transform:uppercase; }
+    .brandTag{
+      background:#fff; color:#000;
+      padding:6px 14px;
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.28em;
+    }
+    .brand small{
+      color:var(--ink);
+      font-weight:800;
+      font-size:14px;
+      letter-spacing:.38em;
+      opacity:.95;
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 16px 110px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .panel{
+      position:relative;
+      background: linear-gradient(180deg, rgba(23,27,46,.92), rgba(23,27,46,.75));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:-40px -30px -40px -30px;
+      background: linear-gradient(125deg, transparent 0 42%, rgba(255,255,255,.06) 42% 43.2%, transparent 43.2% 100%);
+      pointer-events:none;
+      opacity:.65;
+    }
+    .panelInner{ position:relative; padding:14px; }
+
+    .headRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding:6px 6px 12px;
+      border-bottom:1px solid var(--line);
+    }
+    .headRow h1{ margin:0; font-size:24px; }
+    .meta{ margin-top:6px; color:var(--muted); font-size:13px; line-height:1.35; }
+
+    .btnRow{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--ink);
+      padding:9px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:transform .12s ease, background .12s ease;
+      user-select:none;
+      font-weight:900;
+      font-size: 13px;
+    }
+    .btn:hover{ background:rgba(255,255,255,.09); }
+    .btn:active{ transform:scale(.98); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(168,85,247,.92));
+      border-color: rgba(255,255,255,.16);
+      color:#0b061a;
+    }
+
+    /* Calendar grid */
+    .calTop{
+      padding:12px 6px 8px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .monthTitle{
+      font-weight:1000;
+      letter-spacing:.06em;
+    }
+    .legend{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+      color:var(--muted); font-size:12.5px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      display:inline-block; border:1px solid rgba(255,255,255,.12);
+      margin-right:6px;
+    }
+
+    .dow{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:8px;
+      padding:0 6px 8px;
+      color:rgba(214,201,255,.9);
+      font-size:12px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+    }
+    .dow div{ text-align:center; opacity:.85; }
+
+    .calGrid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:8px;
+      padding:0 6px 6px;
+    }
+    .day{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      padding:10px 10px 9px;
+      min-height:76px;
+      cursor:pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    .day:hover{
+      transform: translateY(-1px);
+      border-color: rgba(168,85,247,.45);
+      background: rgba(255,255,255,.06);
+    }
+    .day.muted{
+      opacity:.45;
+    }
+    .num{
+      font-weight:900;
+      font-size:13px;
+      color: rgba(245,240,255,.95);
+    }
+    .badges{
+      margin-top:8px;
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .badge{
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .badge.done{ border-color: rgba(88,214,255,.35); background: rgba(88,214,255,.10); color: rgba(245,240,255,.95); }
+    .badge.mood{ border-color: rgba(168,85,247,.35); background: rgba(168,85,247,.12); color: rgba(245,240,255,.95); }
+
+    .todayRing{
+      position:absolute;
+      inset:8px;
+      border-radius: 12px;
+      border:1px dashed rgba(255,255,255,.25);
+      pointer-events:none;
+    }
+
+    /* Right panel editor */
+    .row{
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
+      padding:12px 6px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .muchieBox{
+      display:grid;
+      grid-template-columns: 80px 1fr;
+      gap:12px;
+      align-items:center;
+      padding:12px 6px;
+    }
+    .muchieAvatar{
+      width:80px; height:80px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      overflow:hidden;
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+      display:grid;
+      place-items:center;
+    }
+    .muchieAvatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    .bubble{
+      padding:10px 12px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      color: rgba(245,240,255,.92);
+      font-size: 13.5px;
+      line-height: 1.35;
+      min-height: 44px;
+    }
+    .bubble strong{ color: var(--ink); }
+
+    label{
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:.16em;
+      text-transform:uppercase;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      padding:12px 6px 0;
+    }
+    select, textarea{
+      width:100%;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      color:var(--ink);
+      padding:12px 12px;
+      outline:none;
+      font-size:14px;
+    }
+    textarea{
+      min-height:120px;
+      resize:vertical;
+      line-height:1.45;
+    }
+
+    .footerRow{
+      margin-top: 12px;
+      padding:12px 6px 6px;
+      border-top:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .hint{ color:var(--muted); font-size:13px; line-height:1.35; opacity:.95; }
+
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brandTag">PURPZ</div>
+      <small>Calendar</small>
+    </div>
+    <button class="btn" onclick="location.href='../home'">← Home</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Calendar -->
+  <section class="panel">
+    <div class="panelInner">
+      <div class="headRow">
+        <div>
+          <h1>Calendar</h1>
+          <div class="meta">Track daily focus + mood + tiny notes. (No pressure.)</div>
+        </div>
+        <div class="btnRow">
+          <button class="btn" id="prevBtn">←</button>
+          <button class="btn primary" id="todayBtn">Today</button>
+          <button class="btn" id="nextBtn">→</button>
+        </div>
+      </div>
+
+      <div class="calTop">
+        <div class="monthTitle" id="monthTitle">—</div>
+        <div class="legend">
+          <span><span class="dot" style="background:rgba(88,214,255,.55)"></span>Done</span>
+          <span><span class="dot" style="background:rgba(168,85,247,.55)"></span>Mood</span>
+          <span><span class="dot" style="background:rgba(255,255,255,.18)"></span>Note</span>
+        </div>
+      </div>
+
+      <div class="dow">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+
+      <div class="calGrid" id="calGrid"></div>
+    </div>
+  </section>
+
+  <!-- Day editor -->
+  <aside class="panel">
+    <div class="panelInner">
+      <div class="row">
+        <div>
+          <div style="font-weight:1000; font-size:16px;">Day details</div>
+          <div class="meta" id="selectedDateText">Select a day</div>
+        </div>
+        <button class="btn bad" id="clearDayBtn" disabled>Clear</button>
+      </div>
+
+      <div class="muchieBox">
+        <div class="muchieAvatar">
+          <img id="muchieThumb" src="images/muchie.png" alt="Muchie">
+        </div>
+        <div class="bubble" id="muchieBubble"><strong>Muchie:</strong> click a day, big sibling. Let’s track gently 🐾</div>
+      </div>
+
+      <div class="field">
+        <label for="doneCheck">Daily Focus</label>
+        <button class="btn" id="doneBtn" disabled>Mark as Done</button>
+      </div>
+
+      <div class="field">
+        <label for="moodSel">Mood</label>
+        <select id="moodSel" disabled>
+          <option value="">— Choose mood —</option>
+          <option value="Calm">Calm</option>
+          <option value="Happy">Happy</option>
+          <option value="Focused">Focused</option>
+          <option value="Grateful">Grateful</option>
+          <option value="Tired">Tired</option>
+          <option value="Stressed">Stressed</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="noteBox">Tiny note</label>
+        <textarea id="noteBox" placeholder="One sentence is enough…" disabled></textarea>
+      </div>
+
+      <div class="footerRow">
+        <div class="hint" id="statusHint">Saved automatically.</div>
+        <div class="btnRow">
+          <button class="btn" id="saveBtn" disabled>Save</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+(() => {
+  // ---- storage keys ----
+  const CAL_KEY = "purpz_calendar_v1";
+  const TYCOON_KEY = "purpz_muchie_tycoon_v1"; // to sync equipped outfit
+
+  const OUTFIT_IMG = {
+    base: "images/muchie.png",
+    tech: "images/muchie_tech.png",
+    galaxy: "images/muchie_galaxy.png",
+    mechanic: "images/muchie_mechanic.png",
+    cozy: "images/muchie_cozy.png"
+  };
+
+  const $ = (s) => document.querySelector(s);
+  const calGrid = $("#calGrid");
+  const monthTitle = $("#monthTitle");
+  const prevBtn = $("#prevBtn");
+  const nextBtn = $("#nextBtn");
+  const todayBtn = $("#todayBtn");
+
+  const selectedDateText = $("#selectedDateText");
+  const clearDayBtn = $("#clearDayBtn");
+  const doneBtn = $("#doneBtn");
+  const moodSel = $("#moodSel");
+  const noteBox = $("#noteBox");
+  const saveBtn = $("#saveBtn");
+  const statusHint = $("#statusHint");
+
+  const muchieThumb = $("#muchieThumb");
+  const muchieBubble = $("#muchieBubble");
+
+  // ---- date helpers ----
+  const pad = (n) => String(n).padStart(2,"0");
+  const toISO = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const fromISO = (iso) => {
+    const [y,m,dd] = iso.split("-").map(Number);
+    return new Date(y, m-1, dd);
+  };
+  const today = () => {
+    const d = new Date();
+    d.setHours(0,0,0,0);
+    return d;
+  };
+
+  // ---- state ----
+  let view = today(); view.setDate(1); // first day of month
+  let selectedISO = null;
+
+  function loadData(){
+    try{
+      const raw = localStorage.getItem(CAL_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      return obj && typeof obj === "object" ? obj : {};
+    }catch{
+      return {};
+    }
+  }
+  function saveData(obj){
+    localStorage.setItem(CAL_KEY, JSON.stringify(obj));
+  }
+  let data = loadData();
+
+  // ---- sync muchie equipped outfit (from Tycoon) ----
+  function syncMuchie(){
+    try{
+      const raw = localStorage.getItem(TYCOON_KEY);
+      const t = raw ? JSON.parse(raw) : null;
+      const eq = (t && t.equippedOutfit) ? t.equippedOutfit : "base";
+      muchieThumb.src = OUTFIT_IMG[eq] || OUTFIT_IMG.base;
+    }catch{
+      muchieThumb.src = OUTFIT_IMG.base;
+    }
+  }
+
+  // ---- render calendar ----
+  function render(){
+    const y = view.getFullYear();
+    const m = view.getMonth();
+    monthTitle.textContent = view.toLocaleString(undefined, { month:"long", year:"numeric" });
+
+    const first = new Date(y, m, 1);
+    const startDow = first.getDay();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+
+    // previous month padding
+    const prevDays = new Date(y, m, 0).getDate();
+
+    calGrid.innerHTML = "";
+
+    const totalCells = 42; // 6 weeks
+    for(let i=0;i<totalCells;i++){
+      const cell = document.createElement("div");
+      cell.className = "day";
+
+      let dayNum, cellDate, isMuted=false;
+
+      if(i < startDow){
+        // previous month
+        dayNum = prevDays - (startDow - 1 - i);
+        cellDate = new Date(y, m-1, dayNum);
+        isMuted = true;
+      }else if(i >= startDow + daysInMonth){
+        // next month
+        dayNum = (i - (startDow + daysInMonth)) + 1;
+        cellDate = new Date(y, m+1, dayNum);
+        isMuted = true;
+      }else{
+        // current month
+        dayNum = (i - startDow) + 1;
+        cellDate = new Date(y, m, dayNum);
+      }
+
+      const iso = toISO(cellDate);
+      if(isMuted) cell.classList.add("muted");
+      cell.dataset.iso = iso;
+
+      const num = document.createElement("div");
+      num.className = "num";
+      num.textContent = dayNum;
+
+      const badges = document.createElement("div");
+      badges.className = "badges";
+
+      const rec = data[iso];
+      if(rec){
+        if(rec.done) {
+          const b = document.createElement("span");
+          b.className = "badge done";
+          b.textContent = "Done";
+          badges.appendChild(b);
+        }
+        if(rec.mood){
+          const b = document.createElement("span");
+          b.className = "badge mood";
+          b.textContent = rec.mood;
+          badges.appendChild(b);
+        }
+        if(rec.note && rec.note.trim()){
+          const b = document.createElement("span");
+          b.className = "badge";
+          b.textContent = "Note";
+          badges.appendChild(b);
+        }
+      }
+
+      cell.appendChild(num);
+      cell.appendChild(badges);
+
+      // today ring
+      if(iso === toISO(today())){
+        const ring = document.createElement("div");
+        ring.className = "todayRing";
+        cell.appendChild(ring);
+      }
+
+      // click handler
+      cell.addEventListener("click", () => selectDay(iso));
+
+      calGrid.appendChild(cell);
+    }
+  }
+
+  // ---- select + editor ----
+  function selectDay(iso){
+    selectedISO = iso;
+    const d = fromISO(iso);
+    selectedDateText.textContent = d.toLocaleDateString(undefined, { weekday:"long", year:"numeric", month:"short", day:"2-digit" });
+
+    const rec = data[iso] || { done:false, mood:"", note:"" };
+
+    doneBtn.disabled = false;
+    moodSel.disabled = false;
+    noteBox.disabled = false;
+    saveBtn.disabled = false;
+    clearDayBtn.disabled = false;
+
+    doneBtn.dataset.done = rec.done ? "1" : "0";
+    doneBtn.textContent = rec.done ? "Done ✔ (click to undo)" : "Mark as Done";
+    moodSel.value = rec.mood || "";
+    noteBox.value = rec.note || "";
+
+    muchieBubble.innerHTML = `<strong>Muchie:</strong> okay… one gentle check-in for ${d.toLocaleDateString(undefined, { month:"short", day:"2-digit" })} 🐾`;
+  }
+
+  function updateSelected(changes){
+    if(!selectedISO) return;
+    const cur = data[selectedISO] || { done:false, mood:"", note:"" };
+    data[selectedISO] = { ...cur, ...changes };
+    saveData(data);
+    statusHint.textContent = "Saved ✔";
+    setTimeout(() => statusHint.textContent = "Saved automatically.", 900);
+    render();
+  }
+
+  // ---- events ----
+  prevBtn.addEventListener("click", () => { view = new Date(view.getFullYear(), view.getMonth()-1, 1); render(); });
+  nextBtn.addEventListener("click", () => { view = new Date(view.getFullYear(), view.getMonth()+1, 1); render(); });
+  todayBtn.addEventListener("click", () => { view = today(); view.setDate(1); render(); selectDay(toISO(today())); });
+
+  doneBtn.addEventListener("click", () => {
+    if(!selectedISO) return;
+    const rec = data[selectedISO] || {};
+    updateSelected({ done: !rec.done });
+    const nowDone = !(rec.done);
+    doneBtn.textContent = nowDone ? "Done ✔ (click to undo)" : "Mark as Done";
+    muchieBubble.innerHTML = nowDone
+      ? `<strong>Muchie:</strong> nice! proud of you, big sibling 🥺✨`
+      : `<strong>Muchie:</strong> okie, no pressure. we try again tomorrow.`;
+  });
+
+  moodSel.addEventListener("change", () => updateSelected({ mood: moodSel.value }));
+  noteBox.addEventListener("input", () => {
+    // autosave after small pause
+    clearTimeout(noteBox.__t);
+    noteBox.__t = setTimeout(() => updateSelected({ note: noteBox.value }), 450);
+  });
+
+  saveBtn.addEventListener("click", () => updateSelected({ mood: moodSel.value, note: noteBox.value }));
+
+  clearDayBtn.addEventListener("click", () => {
+    if(!selectedISO) return;
+    const ok = confirm("Clear this day?");
+    if(!ok) return;
+    delete data[selectedISO];
+    saveData(data);
+    statusHint.textContent = "Cleared.";
+    selectedISO = null;
+
+    doneBtn.disabled = true;
+    moodSel.disabled = true;
+    noteBox.disabled = true;
+    saveBtn.disabled = true;
+    clearDayBtn.disabled = true;
+    selectedDateText.textContent = "Select a day";
+    moodSel.value = "";
+    noteBox.value = "";
+    doneBtn.textContent = "Mark as Done";
+    muchieBubble.innerHTML = `<strong>Muchie:</strong> cleared. fresh start 🐾`;
+    render();
+  });
+
+  // ---- init ----
+  syncMuchie();
+  render();
+  selectDay(toISO(today()));
+})();
+</script>
+</body>
+</html>

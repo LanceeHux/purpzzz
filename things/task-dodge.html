@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PURPZ • Task Dodge</title>
+  <style>
+    :root{
+      --bg:#0b0620;
+      --panel:#140b2e;
+      --panel2:#1b0f3a;
+      --ink:#f5f0ff;
+      --muted:#d6c9ff;
+      --line:rgba(255,255,255,.10);
+
+      --accent:#a855f7;
+      --accent2:#7c3aed;
+      --accent3:#ec4899;
+
+      --good:#58d6ff;
+      --bad:#ff5b7a;
+
+      --shadow: 0 20px 50px rgba(0,0,0,.50);
+      --radius: 18px;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1100px 700px at 12% 12%, rgba(168,85,247,.35), transparent 60%),
+        radial-gradient(1000px 700px at 90% 18%, rgba(124,58,237,.25), transparent 58%),
+        radial-gradient(900px 700px at 55% 115%, rgba(236,72,153,.14), transparent 55%),
+        linear-gradient(160deg, #09031a, #0b0620 40%, #12062a);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    header{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(15,18,32,.85), rgba(15,18,32,.55));
+      border-bottom:1px solid var(--line);
+    }
+    .topbar{
+      max-width:1100px;
+      margin:0 auto;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:14px;
+      letter-spacing:.28em; text-transform:uppercase;
+    }
+    .brandTag{
+      background:#fff; color:#000;
+      padding:6px 14px;
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.28em;
+    }
+    .brand small{
+      color:var(--ink);
+      font-weight:800;
+      font-size:14px;
+      letter-spacing:.38em;
+      opacity:.95;
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 16px 110px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .panel{
+      position:relative;
+      background: linear-gradient(180deg, rgba(23,27,46,.92), rgba(23,27,46,.75));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:-40px -30px -40px -30px;
+      background: linear-gradient(125deg, transparent 0 42%, rgba(255,255,255,.06) 42% 43.2%, transparent 43.2% 100%);
+      pointer-events:none;
+      opacity:.7;
+    }
+    .panelInner{ position:relative; padding:14px; }
+
+    .gameHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding:6px 6px 10px;
+      border-bottom:1px solid var(--line);
+    }
+    .titleBox h1{
+      margin:0;
+      font-size:24px;
+      letter-spacing:.2px;
+    }
+    .meta{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+    .hud{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
+    .chip{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      padding:10px 12px;
+      border-radius:999px;
+      color:var(--muted);
+      font-weight:700;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .chip b{ color:var(--ink); }
+
+    .canvasWrap{
+      padding:14px 6px 8px;
+      display:flex;
+      justify-content:center;
+    }
+    canvas{
+      width:min(640px, 100%);
+      aspect-ratio: 16/9;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(27,15,58,.78), rgba(27,15,58,.52));
+      box-shadow: 0 12px 26px rgba(0,0,0,.35);
+      display:block;
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:center;
+      padding:10px 6px 6px;
+      border-top:1px solid var(--line);
+    }
+
+    .btnRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--ink);
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:transform .12s ease, background .12s ease, filter .12s ease;
+      user-select:none;
+      font-weight:700;
+    }
+    .btn:hover{ background:rgba(255,255,255,.09); }
+    .btn:active{ transform:scale(.98); }
+
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(168,85,247,.92));
+      border-color: rgba(255,255,255,.16);
+      color:#0b061a;
+    }
+    .btn.danger{
+      background: rgba(255,91,122,.10);
+      border-color: rgba(255,91,122,.35);
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+      opacity:.95;
+    }
+
+    /* Right panel */
+    .side h2{
+      margin:6px 4px 10px;
+      font-size:14px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    .card{
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(27,15,58,.78), rgba(27,15,58,.52));
+      border-radius: 16px;
+      padding:12px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+    }
+
+    .formRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    input[type="text"]{
+      flex:1;
+      min-width: 160px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: var(--ink);
+      padding: 11px 12px;
+      outline:none;
+      font-size: 14px;
+    }
+    input::placeholder{ color: rgba(214,201,255,.80); }
+
+    .scoreList{
+      margin: 10px 0 0;
+      padding:0;
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .scoreItem{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 10px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(245,240,255,.90);
+      font-size: 13.5px;
+    }
+    .scoreItem small{ color: var(--muted); }
+
+    /* Muchie bubble */
+    .muchieBubble{
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .muchieIcon{
+      width:44px; height:44px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      display:grid;
+      place-items:center;
+      font-size: 22px;
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+      flex:0 0 auto;
+    }
+    .bubble{
+      flex:1;
+      padding:10px 12px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      color: rgba(245,240,255,.92);
+      font-size: 13.5px;
+      line-height: 1.35;
+      min-height: 44px;
+    }
+    .bubble strong{ color: var(--ink); }
+
+    /* Mobile */
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+    }
+
+    /* Prevent sideways scroll from pseudo elements */
+    html, body { overflow-x:hidden; }
+      .scoreBoard{
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.scoreRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: rgba(245,240,255,.92);
+  font-size: 13.5px;
+}
+
+.scoreRow span{
+  color: var(--muted);
+  letter-spacing: .04em;
+}
+
+.scoreRow b{
+  font-size: 16px;
+  color: var(--ink);
+}
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brandTag">PURPZ</div>
+      <small>Task Dodge</small>
+    </div>
+    <div class="chip" title="Controls">
+      <span aria-hidden="true">⌨</span>
+      <span><b>A/D</b> or <b>←/→</b> • <b>Space</b> pause</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Game panel -->
+  <section class="panel">
+    <div class="panelInner">
+      <div class="gameHeader">
+        <div class="titleBox">
+          <h1>Task Dodge</h1>
+          <div class="meta">
+            Catch <b style="color:var(--good)">GOOD</b> tasks for points.<br/>
+            Dodge <b style="color:var(--bad)">BAD</b> distractions or lose lives.
+          </div>
+        </div>
+        <div class="hud">
+          <div class="chip">Score: <b id="score">0</b></div>
+          <div class="chip">Lives: <b id="lives">3</b></div>
+          <div class="chip">Level: <b id="level">1</b></div>
+        </div>
+      </div>
+
+      <div class="canvasWrap">
+        <canvas id="game" width="960" height="540" aria-label="Task Dodge canvas"></canvas>
+      </div>
+
+      <div class="controls">
+        <div class="hint" id="statusHint">Press <b>Start</b> to play. Tip: small moves are safer.</div>
+        <div class="btnRow">
+          <button class="btn primary" id="startBtn">Start</button>
+          <button class="btn" id="pauseBtn" disabled>Pause</button>
+          <button class="btn danger" id="resetBtn">Reset</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Side panel -->
+  <aside class="panel side">
+    <div class="panelInner">
+      <h2>Highscores</h2>
+      <div class="card">
+        <div class="formRow">
+          <button class="btn" id="clearScoresBtn" title="Clear highscores">Clear</button>
+        </div>
+        <div class="scoreBoard">
+  <div class="scoreRow">
+    <span>Highscore</span>
+    <b id="highScoreVal">0</b>
+  </div>
+  <div class="scoreRow">
+    <span>Previous</span>
+    <b id="prevScoreVal">0</b>
+  </div>
+</div>
+
+        <div class="muchieBubble">
+          <div class="muchieIcon" aria-hidden="true">🐾</div>
+          <div class="bubble" id="muchieText">
+            <strong>Muchie:</strong> Ready when you are, big sibling.
+          </div>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <h2>Legend</h2>
+      <div class="card" style="display:grid; gap:10px;">
+        <div class="scoreItem">
+          <span>✅ GOOD task (catch)</span>
+          <small>+10 points</small>
+        </div>
+        <div class="scoreItem">
+          <span>⚠ BAD distraction (dodge)</span>
+          <small>-1 life</small>
+        </div>
+        <div class="scoreItem">
+          <span>✨ Bonus (rare)</span>
+          <small>+40 points</small>
+        </div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+(() => {
+  // =========================
+  // PURPZ • Task Dodge (Canvas)
+  // Highscore + Previous only
+  // Player label replaced with Muchie image
+  // =========================
+
+  // ---- Image (Muchie) ----
+// ---- Image (Muchie) synced from Tycoon ----
+const TYCOON_KEY = "purpz_muchie_tycoon_v1";
+
+const OUTFIT_IMG = {
+  base: "images/muchie.png",
+  tech: "images/muchie_tech.png",
+  galaxy: "images/muchie_galaxy.png",
+  mechanic: "images/muchie_mechanic.png",
+  cozy: "images/muchie_cozy.png"
+};
+
+const muchieImg = new Image();
+
+function syncMuchieImage(){
+  let eq = "base";
+  try{
+    const raw = localStorage.getItem(TYCOON_KEY);
+    const t = raw ? JSON.parse(raw) : null;
+    eq = (t && t.equippedOutfit) ? t.equippedOutfit : "base";
+  }catch{}
+
+  muchieImg.src = OUTFIT_IMG[eq] || OUTFIT_IMG.base;
+}
+
+syncMuchieImage();
+muchieImg.onload = () => draw();
+window.addEventListener("storage", (e) => {
+  if(e.key === TYCOON_KEY){
+    syncMuchieImage();
+  }
+});
+
+  // ---- DOM ----
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+
+  const scoreEl = document.getElementById("score");
+  const livesEl = document.getElementById("lives");
+  const levelEl = document.getElementById("level");
+  const statusHint = document.getElementById("statusHint");
+
+  const startBtn = document.getElementById("startBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  const clearScoresBtn = document.getElementById("clearScoresBtn");
+  const muchieTextEl = document.getElementById("muchieText");
+
+  // NEW scoreboard elements (must exist in HTML)
+  const highScoreVal = document.getElementById("highScoreVal");
+  const prevScoreVal = document.getElementById("prevScoreVal");
+
+  // If image loads after first draw, redraw so it appears
+  muchieImg.onload = () => draw();
+  muchieImg.onerror = () => console.log("Muchie image not found:", muchieImg.src);
+
+  // ----- Muchie lines -----
+  const muchieLines = {
+    start: [
+      "Muchie says: gentle moves, okay? You got this.",
+      "Okay big sibling — focus mode ON. 🐾",
+      "One task at a time. Muchie is watching your back."
+    ],
+    good: [
+      "Nice catch! lilyyy!",
+      "Yay! Small wins, big sibling!",
+      "Muchie is proud, Lily! Keep going!"
+    ],
+    bad: [
+      "Oop— it’s okay. Reset your focus, you can recover!",
+      "No panic. One mistake doesn’t cancel progress.",
+      "Muchie: breathe… then dodge again!"
+    ],
+    level: [
+      "Level up! That means you’re locked in!",
+      "Productivity aura detected. ✨",
+      "Muchie says: you’re getting faster!"
+    ],
+    gameover: [
+      "buangz… but hey, you showed up. yeheyyy!",
+      "We try again? Muchie is still here.",
+      "It’s okay to restart. Lily always does that."
+    ],
+    milestone: [
+      "100+ points! Big sibling is cooking!",
+      "200+ points?! Whoa… main character energy.",
+      "300+ points… Muchie is SHOOK. 🐾"
+    ],
+    newHigh: [
+      "NEW HIGHSCORE?! Big sibling is built different 🐾✨",
+      "WOAH— highscore unlocked! Muchie is screaming internally.",
+      "Best run so far! Keep that energy!"
+    ]
+  };
+
+  function escapeHtml(s) {
+    return (s || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function sayMuchie(kind) {
+    const arr = muchieLines[kind] || ["..."];
+    const msg = arr[Math.floor(Math.random() * arr.length)];
+    muchieTextEl.innerHTML = `<strong>Muchie:</strong> ${escapeHtml(msg)}`;
+  }
+
+  // ----- Highscore + Previous (localStorage) -----
+  const HS_KEY = "purpz_task_dodge_highscore_v1";
+  const PREV_KEY = "purpz_task_dodge_prevscore_v1";
+
+  function renderScores() {
+    const hs = Number(localStorage.getItem(HS_KEY) || 0);
+    const prev = Number(localStorage.getItem(PREV_KEY) || 0);
+    if (highScoreVal) highScoreVal.textContent = hs;
+    if (prevScoreVal) prevScoreVal.textContent = prev;
+  }
+
+  function submitScore(finalScore) {
+    const hs = Number(localStorage.getItem(HS_KEY) || 0);
+
+    localStorage.setItem(PREV_KEY, String(finalScore));
+
+    if (finalScore > hs) {
+      localStorage.setItem(HS_KEY, String(finalScore));
+      sayMuchie("newHigh");
+    }
+    renderScores();
+  }
+
+  if (clearScoresBtn) {
+    clearScoresBtn.addEventListener("click", () => {
+      const ok = confirm("Clear highscore and previous score?");
+      if (!ok) return;
+      localStorage.removeItem(HS_KEY);
+      localStorage.removeItem(PREV_KEY);
+      renderScores();
+      sayMuchie("start");
+    });
+  }
+
+  // ----- Game state -----
+  const state = {
+    running: false,
+    paused: false,
+    score: 0,
+    lives: 3,
+    level: 1,
+    lastTime: 0,
+    spawnTimer: 0,
+    spawnEvery: 750, // ms
+    speed: 220,      // base fall speed px/sec
+    milestoneMark: 0
+  };
+
+  const player = {
+    x: canvas.width / 2,
+    y: canvas.height - 70,
+    w: 110,
+    h: 26,
+    vx: 0,
+    maxSpeed: 520
+  };
+
+  const items = []; // {x,y,r,type,vy,label}
+  const goodLabels = ["✅ Kopiii", "✅ Smeeep", "✅ Study", "✅ Smilee", "✅ Karyokaa", "✅ Rest"];
+  const badLabels = ["⚠ moody", "⚠ Overthink", "⚠ Lazy", "⚠ Delay", "⚠ Doubt", "⚠ Dragon"];
+  const bonusLabels = ["✨ God"];
+
+  function updateHUD() {
+    scoreEl.textContent = String(state.score);
+    livesEl.textContent = String(state.lives);
+    levelEl.textContent = String(state.level);
+  }
+
+  function resetGame() {
+    state.running = false;
+    state.paused = false;
+    state.score = 0;
+    state.lives = 3;
+    state.level = 1;
+    state.spawnTimer = 0;
+    state.spawnEvery = 750;
+    state.speed = 220;
+    state.milestoneMark = 0;
+
+    items.length = 0;
+    player.x = canvas.width / 2;
+    player.vx = 0;
+
+    updateHUD();
+    statusHint.innerHTML = `Press <b>Start</b> to play. Tip: small moves are safer.`;
+    pauseBtn.textContent = "Pause";
+    pauseBtn.disabled = true;
+    startBtn.disabled = false;
+
+    sayMuchie("start");
+    draw();
+  }
+
+  function startGame() {
+    if (state.running) return;
+    state.running = true;
+    state.paused = false;
+    state.lastTime = performance.now();
+
+    startBtn.disabled = true;
+    pauseBtn.disabled = false;
+
+    statusHint.textContent = "Dodge distractions. Catch good tasks. Space = pause.";
+    sayMuchie("start");
+    requestAnimationFrame(loop);
+  }
+
+  function togglePause() {
+    if (!state.running) return;
+    state.paused = !state.paused;
+
+    pauseBtn.textContent = state.paused ? "Resume" : "Pause";
+    statusHint.textContent = state.paused
+      ? "Paused. Space or Resume to continue."
+      : "Back to it — you got this.";
+
+    if (!state.paused) {
+      state.lastTime = performance.now();
+      requestAnimationFrame(loop);
+    } else {
+      draw();
+    }
+  }
+
+  function gameOver() {
+    state.running = false;
+    state.paused = false;
+
+    pauseBtn.disabled = true;
+    startBtn.disabled = false;
+
+    statusHint.textContent = `Game over. Final score: ${state.score}.`;
+    sayMuchie("gameover");
+    submitScore(state.score);
+    draw();
+  }
+
+  // ----- Input -----
+  const keys = { left: false, right: false };
+
+  window.addEventListener("keydown", (e) => {
+    const k = e.key.toLowerCase();
+    if (e.key === "ArrowLeft" || k === "a") keys.left = true;
+    if (e.key === "ArrowRight" || k === "d") keys.right = true;
+    if (e.key === " ") {
+      e.preventDefault();
+      togglePause();
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    const k = e.key.toLowerCase();
+    if (e.key === "ArrowLeft" || k === "a") keys.left = false;
+    if (e.key === "ArrowRight" || k === "d") keys.right = false;
+  });
+
+  // Touch controls (drag or tap side)
+  let pointerDown = false;
+  canvas.addEventListener("pointerdown", (e) => {
+    pointerDown = true;
+    canvas.setPointerCapture(e.pointerId);
+    handlePointer(e);
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (pointerDown) handlePointer(e);
+  });
+  canvas.addEventListener("pointerup", () => {
+    pointerDown = false;
+    keys.left = keys.right = false;
+  });
+
+  function handlePointer(e) {
+    const rect = canvas.getBoundingClientRect();
+    const px = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const dx = px - player.x;
+    if (Math.abs(dx) < 10) {
+      keys.left = keys.right = false;
+      return;
+    }
+    keys.left = dx < 0;
+    keys.right = dx > 0;
+  }
+
+  // ----- Spawn -----
+  function rand(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  function spawnItem() {
+    // good: 65%, bad: 30%, bonus: 5%
+    const p = Math.random();
+    let type = "good";
+    if (p > 0.65 && p <= 0.95) type = "bad";
+    if (p > 0.95) type = "bonus";
+
+    // adjust falling size here:
+    const r = type === "bonus" ? 50 : 50;
+
+    const x = rand(r + 8, canvas.width - r - 8);
+    const y = -r - 10;
+
+    const extra = (state.level - 1) * 26;
+    const vy = state.speed + extra + rand(-25, 40);
+
+    let label = "";
+    if (type === "good") label = goodLabels[Math.floor(Math.random() * goodLabels.length)];
+    if (type === "bad") label = badLabels[Math.floor(Math.random() * badLabels.length)];
+    if (type === "bonus") label = bonusLabels[0];
+
+    items.push({ x, y, r, type, vy, label });
+  }
+
+  // ----- Collision -----
+  function rectCircleCollide(rx, ry, rw, rh, cx, cy, cr) {
+    const closestX = Math.max(rx, Math.min(cx, rx + rw));
+    const closestY = Math.max(ry, Math.min(cy, ry + rh));
+    const dx = cx - closestX;
+    const dy = cy - closestY;
+    return dx * dx + dy * dy <= cr * cr;
+  }
+
+  // ----- Loop -----
+  function loop(t) {
+    if (!state.running || state.paused) return;
+
+    const dt = Math.min(0.033, (t - state.lastTime) / 1000);
+    state.lastTime = t;
+
+    // player movement
+    player.vx = 0;
+    if (keys.left) player.vx = -player.maxSpeed;
+    if (keys.right) player.vx = player.maxSpeed;
+
+    player.x += player.vx * dt;
+    player.x = Math.max(player.w / 2, Math.min(canvas.width - player.w / 2, player.x));
+
+    // spawns
+    state.spawnTimer += dt * 1000;
+    if (state.spawnTimer >= state.spawnEvery) {
+      state.spawnTimer = 0;
+      spawnItem();
+      if (state.level >= 4 && Math.random() < 0.22) spawnItem();
+    }
+
+    // update items
+    for (let i = items.length - 1; i >= 0; i--) {
+      const it = items[i];
+      it.y += it.vy * dt;
+
+      // collision with player bar
+      const rx = player.x - player.w / 2;
+      const ry = player.y - player.h / 2;
+
+      if (rectCircleCollide(rx, ry, player.w, player.h, it.x, it.y, it.r)) {
+        if (it.type === "good") {
+          state.score += 10;
+          sayMuchie("good");
+        } else if (it.type === "bonus") {
+          state.score += 40;
+          sayMuchie("good");
+        } else {
+          state.lives -= 1;
+          sayMuchie("bad");
+        }
+
+        items.splice(i, 1);
+        updateHUD();
+
+        if (state.lives <= 0) {
+          return gameOver();
+        }
+
+        // level up
+        const newLevel = 1 + Math.floor(state.score / 80);
+        if (newLevel !== state.level) {
+          state.level = newLevel;
+          state.spawnEvery = Math.max(380, 760 - (state.level - 1) * 55);
+          state.speed = 220 + (state.level - 1) * 18;
+          updateHUD();
+          sayMuchie("level");
+        }
+
+        // milestone lines
+        const m = Math.floor(state.score / 100);
+        if (m > state.milestoneMark && m > 0) {
+          state.milestoneMark = m;
+          sayMuchie("milestone");
+        }
+
+        continue;
+      }
+
+      // remove off screen
+      if (it.y - it.r > canvas.height + 20) {
+        items.splice(i, 1);
+      }
+    }
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // ----- Drawing -----
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // subtle stars
+    ctx.globalAlpha = 0.9;
+    for (let i = 0; i < 28; i++) {
+      const x = (i * 97 + 33) % canvas.width;
+      const y = (i * 61 + 19) % canvas.height;
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
+      ctx.beginPath();
+      ctx.arc(x, y, (i % 3) + 1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // diagonal sheen
+    ctx.save();
+    ctx.globalAlpha = 0.10;
+    const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    grad.addColorStop(0, "rgba(255,255,255,0)");
+    grad.addColorStop(0.45, "rgba(255,255,255,0)");
+    grad.addColorStop(0.50, "rgba(255,255,255,0.35)");
+    grad.addColorStop(0.55, "rgba(255,255,255,0)");
+    grad.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+
+    // player bar
+    ctx.save();
+    ctx.translate(player.x, player.y);
+
+    // glow
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = "#a855f7";
+    roundRect(ctx, -player.w / 2 - 6, -player.h / 2 - 6, player.w + 12, player.h + 12, 14);
+    ctx.fill();
+
+    // bar
+    ctx.globalAlpha = 1;
+    const pgrad = ctx.createLinearGradient(-player.w / 2, 0, player.w / 2, 0);
+    pgrad.addColorStop(0, "rgba(124,58,237,0.95)");
+    pgrad.addColorStop(1, "rgba(168,85,247,0.92)");
+    ctx.fillStyle = pgrad;
+    roundRect(ctx, -player.w / 2, -player.h / 2, player.w, player.h, 12);
+    ctx.fill();
+
+    // Muchie icon (replaces "FOCUS")
+    if (muchieImg.complete && muchieImg.naturalWidth > 0) {
+      const imgSize = 150; // adjust size here
+      ctx.drawImage(muchieImg, -imgSize / 2, -imgSize / 2, imgSize, imgSize);
+    }
+
+    ctx.restore();
+
+    // items
+    for (const it of items) drawItem(it);
+
+    // overlay when not running
+    if (!state.running) {
+      ctx.save();
+      ctx.globalAlpha = 0.80;
+      ctx.fillStyle = "rgba(0,0,0,0.35)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "rgba(245,240,255,0.95)";
+      ctx.font = "900 34px system-ui, -apple-system, Segoe UI";
+      ctx.textAlign = "center";
+      ctx.fillText("TASK DODGE", canvas.width / 2, canvas.height / 2 - 26);
+
+      ctx.fillStyle = "rgba(214,201,255,0.90)";
+      ctx.font = "600 16px system-ui, -apple-system, Segoe UI";
+      ctx.fillText("Catch good tasks • Dodge distractions", canvas.width / 2, canvas.height / 2 + 8);
+      ctx.fillText("Start when you're ready.", canvas.width / 2, canvas.height / 2 + 32);
+      ctx.restore();
+    }
+
+    if (state.paused) {
+      ctx.save();
+      ctx.globalAlpha = 0.70;
+      ctx.fillStyle = "rgba(0,0,0,0.35)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "rgba(245,240,255,0.95)";
+      ctx.font = "900 34px system-ui, -apple-system, Segoe UI";
+      ctx.textAlign = "center";
+      ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
+      ctx.restore();
+    }
+  }
+
+  function drawItem(it) {
+    const color =
+      it.type === "good" ? "rgba(88,214,255,0.95)"
+      : it.type === "bonus" ? "rgba(236,72,153,0.95)"
+      : "rgba(255,91,122,0.95)";
+
+    ctx.save();
+
+    // glow ring
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(it.x, it.y, it.r + 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // body
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(it.x, it.y, it.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // inner shine
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(it.x - it.r * 0.25, it.y - it.r * 0.25, it.r * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+
+    // label (adjust font here)
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = "rgba(11,6,26,0.90)";
+    ctx.font = it.type === "bonus" ? "800 20px system-ui" : "800 20px system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(it.label, it.x, it.y);
+
+    ctx.restore();
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  // Buttons
+  startBtn.addEventListener("click", startGame);
+  pauseBtn.addEventListener("click", togglePause);
+  resetBtn.addEventListener("click", resetGame);
+
+  // Init
+  renderScores();
+  resetGame();
+})();
+</script>
+</body>
+</html>

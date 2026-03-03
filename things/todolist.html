@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+    <head> 
+        <title>To-Do List</title> 
+        <link rel="stylesheet" href="css/todolist.css" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    </head> 
+	<body> 
+        <div class="h1Div"> 
+            <h1> <strong>PURPZ</strong> <br> To-Do List</h1> 
+            <button id="newBtn">Insert</button>
+            <button id="doneBtn">Done</button>
+        </div> 
+        <div class="container"> 
+            <div class="daily-wrapper">
+                <img class="muchie-equipped"  src="images/muchie.png" id="muchieSticker" />
+                <p id="dailyChanges"></p>
+            </div> 
+            <div class="input-row" id="inputRow"> 
+                <input type="text" id="to-do-text" placeholder="Today, I'm going to..." /> 
+                <button id="add-btn">Insert</button> 
+            </div> 
+            <div class="to-do-list" id="list"> 
+                <h1>Tasks:</h1> 
+                <p id="update"></p>
+            </div> 
+        </div> 
+        <script src="js/todolist.js"></script> 
+        <script>
+(function syncMuchieEverywhere(){
+  const TYCOON_KEY = "purpz_muchie_tycoon_v1";
+
+  // Map the equippedOutfit id -> image to show on THIS page
+  const OUTFIT_IMG = {
+    base: "images/muchie.png",
+    tech: "images/muchie_tech.png",
+    galaxy: "images/muchie_galaxy.png",
+    mechanic: "images/muchie_mechanic.png",
+    cozy: "images/muchie_cozy.png"
+  };
+
+  function getEquippedOutfitId(){
+    try{
+      const raw = localStorage.getItem(TYCOON_KEY);
+      const t = raw ? JSON.parse(raw) : null;
+      return (t && t.equippedOutfit) ? t.equippedOutfit : "base";
+    }catch{
+      return "base";
+    }
+  }
+
+  function applyEquippedOutfit(){
+    const eq = getEquippedOutfitId();
+    const imgSrc = OUTFIT_IMG[eq] || OUTFIT_IMG.base;
+
+    // Update ALL images that should reflect equipped outfit
+    document.querySelectorAll(".muchie-equipped").forEach(img => {
+      img.src = imgSrc;
+    });
+  }
+
+  // Run on load
+  document.addEventListener("DOMContentLoaded", applyEquippedOutfit);
+
+  // Optional: if user switches outfit in another tab, auto-update
+  window.addEventListener("storage", (e) => {
+    if(e.key === TYCOON_KEY) applyEquippedOutfit();
+  });
+
+  // Optional: manual call from console if needed:
+  window.__syncMuchie = applyEquippedOutfit;
+})();
+</script>
+    </body> 
+</html>
