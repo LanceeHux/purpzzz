@@ -607,7 +607,13 @@ async function apiList(q = "") {
   const url = q
     ? `${API_BASE}/entries_list.php?q=${encodeURIComponent(q)}`
     : `${API_BASE}/entries_list.php`;
-  const res = await fetch(url, { cache: "no-store" });
+
+  const res = await fetch(url, {
+    method: "GET",
+    mode: "cors",
+    cache: "no-store",
+  });
+
   if (!res.ok) throw new Error("Failed to load entries");
   return await res.json();
 }
