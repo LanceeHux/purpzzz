@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PURPZ • Muchie Space</title>
+  <style>
+    :root{
+      --bg:#0b0620;
+      --panel:#140b2e;
+      --panel2:#1b0f3a;
+      --ink:#f5f0ff;
+      --muted:#d6c9ff;
+      --line:rgba(255,255,255,.10);
+      --accent:#a855f7;
+      --accent2:#7c3aed;
+      --accent3:#ec4899;
+      --shadow: 0 20px 50px rgba(0,0,0,.50);
+      --radius: 18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1100px 700px at 12% 12%, rgba(168,85,247,.35), transparent 60%),
+        radial-gradient(1000px 700px at 90% 18%, rgba(124,58,237,.25), transparent 58%),
+        radial-gradient(900px 700px at 55% 115%, rgba(236,72,153,.14), transparent 55%),
+        linear-gradient(160deg, #09031a, #0b0620 40%, #12062a);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+    header{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(15,18,32,.85), rgba(15,18,32,.55));
+      border-bottom:1px solid var(--line);
+    }
+    .topbar{
+      max-width:1100px;
+      margin:0 auto;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{ display:flex; align-items:center; gap:14px; letter-spacing:.28em; text-transform:uppercase; }
+    .brandTag{
+      background:#fff; color:#000;
+      padding:6px 14px;
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:.28em;
+    }
+    .brand small{
+      color:var(--ink);
+      font-weight:800;
+      font-size:14px;
+      letter-spacing:.38em;
+      opacity:.95;
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 16px 110px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .panel{
+      position:relative;
+      background: linear-gradient(180deg, rgba(23,27,46,.92), rgba(23,27,46,.75));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:-40px -30px -40px -30px;
+      background: linear-gradient(125deg, transparent 0 42%, rgba(255,255,255,.06) 42% 43.2%, transparent 43.2% 100%);
+      pointer-events:none;
+      opacity:.7;
+    }
+    .panelInner{ position:relative; padding:14px; }
+
+    .headRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding:6px 6px 12px;
+      border-bottom:1px solid var(--line);
+    }
+    .headRow h1{ margin:0; font-size:24px; }
+    .meta{ margin-top:6px; color:var(--muted); font-size:13px; line-height:1.35; }
+
+    .muchieStage{
+      padding:14px 6px 6px;
+      display:grid;
+      grid-template-columns: 220px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    .muchieCard{
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(27,15,58,.78), rgba(27,15,58,.52));
+      border-radius: 18px;
+      padding:12px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+    }
+    .muchieAvatar{
+      width:100%;
+      aspect-ratio: 1/1;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      overflow:hidden;
+      box-shadow: 0 12px 28px rgba(0,0,0,.35);
+      display:grid;
+      place-items:center;
+    }
+    .muchieAvatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .bubble{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      color: rgba(245,240,255,.92);
+      font-size: 13.5px;
+      line-height: 1.35;
+      min-height: 52px;
+    }
+    .bubble strong{ color: var(--ink); }
+
+    .grid{
+      display:grid;
+      gap:12px;
+    }
+
+    .card{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      border-radius: 16px;
+      padding:12px;
+    }
+    label{
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      display:block;
+      margin-bottom:8px;
+    }
+    select{
+      width:100%;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      color:var(--ink);
+      padding:12px 12px;
+      outline:none;
+      font-size:14px;
+    }
+
+    .btnRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--ink);
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:transform .12s ease, background .12s ease;
+      user-select:none;
+      font-weight:800;
+      font-size: 13px;
+    }
+    .btn:hover{ background:rgba(255,255,255,.09); }
+    .btn:active{ transform:scale(.98); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(168,85,247,.92));
+      border-color: rgba(255,255,255,.16);
+      color:#0b061a;
+    }
+    .btn.danger{
+      background: rgba(255,91,122,.10);
+      border-color: rgba(255,91,122,.35);
+    }
+
+    .hint{ color:var(--muted); font-size:13px; line-height:1.35; opacity:.95; margin-top:8px; }
+
+    .tinyRow{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 10px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(245,240,255,.90);
+      font-size: 13.5px;
+      margin-top: 10px;
+    }
+    .tinyRow small{ color: var(--muted); }
+
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+      .muchieStage{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brandTag">PURPZ</div>
+      <small>Muchie Space</small>
+    </div>
+    <div class="btnRow">
+      <button class="btn" id="resetStateBtn" title="Reset outfit/action">Reset</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Left -->
+  <section class="panel">
+    <div class="panelInner">
+      <div class="headRow">
+        <div>
+          <h1>Muchie Space</h1>
+          <div class="meta">Change Muchie’s outfit + do an action (like sleep). It updates all <code>.muchie-equipped</code> images.</div>
+        </div>
+      </div>
+
+      <div class="muchieStage">
+        <div class="muchieCard">
+          <div class="muchieAvatar">
+            <!-- IMPORTANT: this class is what your other pages already use -->
+            <img class="muchie-equipped" id="muchieMain" src="images/muchie.png" alt="Muchie">
+          </div>
+          <div class="bubble" id="muchieBubble">
+            <strong>Muchie:</strong> Hewwo Big Lily… pick my outfit please 💜
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <label for="outfitSel">Outfit</label>
+            <select id="outfitSel">
+              <option value="base">Base</option>
+              <option value="tech">Tech</option>
+              <option value="galaxy">Galaxy</option>
+              <option value="mechanic">Mechanic</option>
+              <option value="cozy">Cozy</option>
+            </select>
+            <div class="hint">This saves to localStorage: <code>purpz_muchie_tycoon_v1.equippedOutfit</code></div>
+          </div>
+
+          <div class="card">
+            <label>Actions</label>
+            <div class="btnRow">
+              <button class="btn primary" id="sleepBtn">Sleep 😴</button>
+              <button class="btn" id="wakeBtn">Wake ☀️</button>
+              <button class="btn" id="idleBtn">Normal 🐾</button>
+            </div>
+            <div class="hint">Sleep uses: <code>&lt;outfit&gt;-sleep.png</code> (example: <code>cozy-sleep.png</code>)</div>
+          </div>
+
+          <div class="card">
+            <label>Status</label>
+            <div class="tinyRow"><span>Equipped outfit</span><small id="eqText">—</small></div>
+            <div class="tinyRow"><span>Current action</span><small id="actText">—</small></div>
+            <div class="tinyRow"><span>Current image</span><small id="imgText">—</small></div>
+            <div class="hint">Tip: put your images in <code>/images/</code>. If an image is missing, it’ll show broken icon.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right -->
+  <aside class="panel">
+    <div class="panelInner">
+      <div class="headRow">
+        <div>
+          <h1>Preview Tiles</h1>
+          <div class="meta">These are also <code>.muchie-equipped</code> to prove it syncs everywhere.</div>
+        </div>
+      </div>
+
+      <div class="grid" style="padding:14px 6px 6px;">
+        <div class="card" style="display:flex; gap:12px; align-items:center;">
+          <img class="muchie-equipped" src="images/muchie.png" alt="Muchie" style="width:72px;height:72px;border-radius:16px;border:1px solid rgba(255,255,255,.12);object-fit:cover;">
+          <div>
+            <div style="font-weight:900;">To-do List</div>
+            <div class="hint" style="margin:6px 0 0;">Muchie helps you gently.</div>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex; gap:12px; align-items:center;">
+          <img class="muchie-equipped" src="images/muchie.png" alt="Muchie" style="width:72px;height:72px;border-radius:16px;border:1px solid rgba(255,255,255,.12);object-fit:cover;">
+          <div>
+            <div style="font-weight:900;">Diary</div>
+            <div class="hint" style="margin:6px 0 0;">Write thoughts with Muchie.</div>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex; gap:12px; align-items:center;">
+          <img class="muchie-equipped" src="images/muchie.png" alt="Muchie" style="width:72px;height:72px;border-radius:16px;border:1px solid rgba(255,255,255,.12);object-fit:cover;">
+          <div>
+            <div style="font-weight:900;">Minigames</div>
+            <div class="hint" style="margin:6px 0 0;">Play → earn → outfits.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+(() => {
+  // =========================
+  // Muchie Space (Outfit + Action)
+  // - Saves equipped outfit into your existing tycoon save key
+  // - Replaces .muchie-equipped images everywhere on the page
+  // - Action "sleep" becomes: images/<outfit>-sleep.png
+  // =========================
+
+  const TYCOON_KEY = "purpz_muchie_tycoon_v1";
+  const ACTION_KEY = "purpz_muchie_action_v1"; // separate tiny key for action on non-tycoon pages
+
+  // Base outfit images (normal/idle)
+  const OUTFIT_BASE_IMG = {
+    base: "things/images/muchie.png",
+    tech: "things/images/muchie_tech.png",
+    galaxy: "things/images/muchie_galaxy.png",
+    mechanic: "things/images/muchie_mechanic.png",
+    cozy: "things/images/muchie_cozy.png"
+  };
+
+  // Action image builders
+  function actionImage(outfitId, action){
+    if(action === "sleep"){
+      // REQUIRED NAMING: images/<outfit>-sleep.png
+      // examples:
+      // images/cozy-sleep.png
+      // images/tech-sleep.png
+      return `things/images/${outfitId}-sleep.png`;
+    }
+    // default: normal outfit image
+    return OUTFIT_BASE_IMG[outfitId] || OUTFIT_BASE_IMG.base;
+  }
+
+  const $ = (s) => document.querySelector(s);
+
+  const outfitSel = $("#outfitSel");
+  const sleepBtn = $("#sleepBtn");
+  const wakeBtn = $("#wakeBtn");
+  const idleBtn = $("#idleBtn");
+  const resetStateBtn = $("#resetStateBtn");
+
+  const bubble = $("#muchieBubble");
+  const eqText = $("#eqText");
+  const actText = $("#actText");
+  const imgText = $("#imgText");
+
+  function loadTycoonState(){
+    try{
+      const raw = localStorage.getItem(TYCOON_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch{
+      return null;
+    }
+  }
+
+  function saveTycoonEquipped(outfitId){
+    const cur = loadTycoonState() || {};
+    cur.equippedOutfit = outfitId;
+    // keep other fields if exist
+    localStorage.setItem(TYCOON_KEY, JSON.stringify(cur));
+  }
+
+  function loadAction(){
+    try{
+      return localStorage.getItem(ACTION_KEY) || "idle";
+    }catch{
+      return "idle";
+    }
+  }
+  function saveAction(action){
+    localStorage.setItem(ACTION_KEY, action);
+  }
+
+  function getEquipped(){
+    const t = loadTycoonState();
+    return (t && t.equippedOutfit) ? t.equippedOutfit : "base";
+  }
+
+  function applyToAllMuchieImages(src){
+    document.querySelectorAll(".muchie-equipped").forEach(img => {
+      img.src = src;
+    });
+  }
+
+  function setBubble(outfitId, action){
+    const lines = {
+      idle: [
+        `Hewwo Big Lily… I’m wearing <b>${outfitId}</b> today 💜`,
+        `Muchie feels cute in <b>${outfitId}</b> outfit 🐾`,
+      ],
+      sleep: [
+        `Zzz… Muchie sleepy… (<b>${outfitId}</b> sleep mode) 😴`,
+        `Good night Big Lily… Muchie will rest now 💤`
+      ],
+      wake: [
+        `Good morning!! Muchie awake na ☀️`,
+        `Muchie: okayy I’m up! what we doing today? ✨`
+      ]
+    };
+    const arr = lines[action] || lines.idle;
+    const msg = arr[Math.floor(Math.random() * arr.length)];
+    bubble.innerHTML = `<strong>Muchie:</strong> ${msg}`;
+  }
+
+  function render(){
+    const outfitId = getEquipped();
+    const action = loadAction();
+
+    // sync dropdown
+    outfitSel.value = outfitId;
+
+    const src = actionImage(outfitId, action);
+
+    applyToAllMuchieImages(src);
+
+    eqText.textContent = outfitId;
+    actText.textContent = action;
+    imgText.textContent = src;
+
+    setBubble(outfitId, action);
+  }
+
+  // Outfit change
+  outfitSel.addEventListener("change", () => {
+    const outfitId = outfitSel.value;
+    saveTycoonEquipped(outfitId);
+
+    // keep current action, just re-render with new outfit
+    render();
+  });
+
+  // Actions
+  sleepBtn.addEventListener("click", () => {
+    saveAction("sleep");
+    render();
+  });
+
+  wakeBtn.addEventListener("click", () => {
+    // "wake" just shows normal outfit image but with a wake message
+    saveAction("wake");
+    // after a moment, return to idle (optional)
+    render();
+    setTimeout(() => {
+      saveAction("idle");
+      render();
+    }, 1200);
+  });
+
+  idleBtn.addEventListener("click", () => {
+    saveAction("idle");
+    render();
+  });
+
+  // Reset
+  resetStateBtn.addEventListener("click", () => {
+    const ok = confirm("Reset Muchie to base + normal?");
+    if(!ok) return;
+    saveTycoonEquipped("base");
+    saveAction("idle");
+    render();
+  });
+
+  // If user changes outfit from another tab (tycoon), update here
+  window.addEventListener("storage", (e) => {
+    if(e.key === TYCOON_KEY || e.key === ACTION_KEY) render();
+  });
+
+  // Init
+  render();
+})();
+</script>
+</body>
+</html>

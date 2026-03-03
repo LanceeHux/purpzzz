@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>PURPZ • Suggestions</title>
+  <style>
+    body{font-family:system-ui;background:#0b0620;color:#f5f0ff;margin:0;padding:18px}
+    .box{max-width:900px;margin:0 auto}
+    .card{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);border-radius:16px;padding:14px}
+    .row{display:flex;gap:10px;margin-top:10px}
+    input{flex:1;padding:12px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;outline:none}
+    button{padding:12px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:linear-gradient(135deg,#7c3aed,#a855f7);color:#0b061a;font-weight:900;cursor:pointer}
+    .list{margin-top:12px;display:grid;gap:10px}
+    .item{padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+    .meta{opacity:.85;color:#d6c9ff;font-size:13px;margin-top:6px}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);font-size:12px;margin-left:8px}
+    .pending{background:rgba(255,255,255,.06)}
+    .approved{background:rgba(88,214,255,.12);border-color:rgba(88,214,255,.35)}
+    .declined{background:rgba(255,91,122,.12);border-color:rgba(255,91,122,.35)}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>💌 Message to Muchie</h1>
+
+    <div class="card">
+      <div>Send an idea. Muchie will forward it to the dev board 
+          <code>Example: muchie, can you add more outfits? color purple please?</code>🐾</div>
+      <div class="row">
+        <input id="suggestionInput" placeholder="Tell Muchie your idea..." maxlength="2000"/>
+        <button id="sendBtn">Send</button>
+      </div>
+      <div class="meta" id="statusText"></div>
+    </div>
+
+    <div class="list" id="suggestionList"></div>
+  </div>
+
+<script>
+const API = "./api";
+const $ = (s)=>document.querySelector(s);
+const input = $("#suggestionInput");
+const sendBtn = $("#sendBtn");
+const statusText = $("#statusText");
+const listEl = $("#suggestionList");
+
+function esc(s){return (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
+
+async function loadSuggestions(){
+  const res = await fetch(`${API}/suggestions_list.php`, {cache:"no-store"});
+  const data = await res.json();
+  if(!data.ok) return;
+
+  listEl.innerHTML = data.items.map(it=>{
+    const cls = it.status;
+    const note = it.admin_note ? `<div class="meta"><b>Muchie note:</b> ${esc(it.admin_note)}</div>` : "";
+    return `
+      <div class="item">
+        <div>
+          ${esc(it.suggestion)}
+          <span class="pill ${cls}">${it.status.toUpperCase()}</span>
+        </div>
+        ${note}
+        <div class="meta">${esc(it.created_at)}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function sendSuggestion(){
+  const suggestion = input.value.trim();
+  if(!suggestion) return;
+
+  statusText.textContent = "Sending…";
+  sendBtn.disabled = true;
+
+  const res = await fetch(`${API}/suggestions_submit.php`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ suggestion })
+  });
+
+  sendBtn.disabled = false;
+
+  const data = await res.json().catch(()=>null);
+  if(!res.ok || !data?.ok){
+    statusText.textContent = "Error sending. Check your /api/ and DB.";
+    return;
+  }
+
+  input.value = "";
+  statusText.textContent = "Sent! Muchie forwarded it to the dev board 🐾";
+  await loadSuggestions();
+}
+
+sendBtn.addEventListener("click", sendSuggestion);
+input.addEventListener("keydown", (e)=>{ if(e.key==="Enter") sendSuggestion(); });
+
+loadSuggestions();
+</script>
+</body>
+</html>
