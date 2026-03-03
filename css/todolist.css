@@ -1,0 +1,377 @@
+/* ========= DIARY-STYLE PURPLE THEME (drop-in) ========= */
+:root{
+  --bg:#0f1220;
+  --panel:#171b2e;
+  --panel2:#1e2340;
+  --ink:#eef0ff;
+  --muted:#b9bfdc;
+  --line:rgba(255,255,255,.10);
+  --accent:#8b7bff;     /* violet */
+  --accent2:#58d6ff;    /* icy highlight */
+  --danger:#ff5b7a;
+  --shadow: 0 20px 50px rgba(0,0,0,.45);
+  --radius: 18px;
+}
+
+/* Reset + typography */
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family: "Segoe UI", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+html, body {
+overflow-x: hidden;
+}
+
+body{
+  min-height:100vh;
+  color:var(--ink);
+  padding: 0 14px 90px;
+
+  background:
+    radial-gradient(1100px 700px at 10% 10%, rgba(139,123,255,.30), transparent 60%),
+    radial-gradient(900px 600px at 90% 20%, rgba(88,214,255,.15), transparent 60%),
+    radial-gradient(1000px 800px at 50% 120%, rgba(255,91,122,.10), transparent 55%),
+    linear-gradient(135deg, #2e1065, #4c1d95, #6d28d9);
+  overflow-x:hidden;
+}
+
+/* ========= Header area like Diary topbar ========= */
+.h1Div{
+  top: 0;
+  padding: 14px;
+  margin: 0 -14px 16px;
+  backdrop-filter: blur(10px);
+  background: linear-gradient(to bottom, rgba(15,18,32,.85), rgba(15,18,32,.55));
+  border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* subtle diagonal line overlay */
+.h1Div::before{
+  content:"";
+  position:absolute;
+  inset:-40px -30px -40px -30px;
+  background:
+    linear-gradient(125deg, transparent 0 42%, rgba(255,255,255,.06) 42% 43.2%, transparent 43.2% 100%);
+  pointer-events:none;
+  opacity:.9;
+}
+
+.h1Div h1{
+  position:relative;
+  font-size: 22px;
+  letter-spacing:5px;
+  font-weight: 550;
+  margin-bottom: 10px;
+}
+
+/* daily wrapper like diary meta */
+.daily-wrapper{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.06);
+  width: fit-content;
+  margin: 0 auto;
+}
+
+#muchieSticker{
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 14px rgba(0,0,0,.35));
+}
+
+p#dailyChanges{
+  color: rgba(238,240,255,.85);
+  font-size: 13px;
+  line-height: 1.35;
+  font-style: italic;
+  letter-spacing: .02em;
+  animation: floatText 3s ease-in-out infinite;
+}
+
+@keyframes floatText {
+  0%   { transform: translateY(0px); opacity: .9; }
+  50%  { transform: translateY(-5px); opacity: 1; }
+  100% { transform: translateY(0px); opacity: .9; }
+}
+
+/* ========= Main container like diary panel ========= */
+.container{
+  max-width: 980px;
+  margin: 0 auto;
+
+  background: linear-gradient(180deg, rgba(23,27,46,.92), rgba(23,27,46,.75));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* give the container a subtle diagonal shine too */
+.container::before{
+  content:"";
+  position:absolute;
+  inset:-40px -30px -40px -30px;
+  background:
+    linear-gradient(125deg, transparent 0 55%, rgba(255,255,255,.04) 55% 56.2%, transparent 56.2% 100%);
+  pointer-events:none;
+  opacity:.6;
+}
+
+/* ========= Input row ========= */
+.container .input-row{
+  display:none;
+  gap: 12px;
+  align-items:center;
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(30,35,64,.60), rgba(30,35,64,.25));
+}
+
+.container .input-row input{
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: var(--ink);
+  outline:none;
+
+  letter-spacing: .04em;
+  font-size: 14px;
+}
+
+.container .input-row input::placeholder{
+  color: rgba(185,191,220,.9);
+}
+
+.container .input-row button#add-btn{
+  width: auto;
+  min-width: 110px;
+  padding: 12px 14px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(255,255,255,.15);
+  background: linear-gradient(135deg, rgba(139,123,255,.95), rgba(88,214,255,.70));
+  color: #0b0f1c;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .12s ease, filter .12s ease;
+  user-select:none;
+}
+
+.container .input-row button#add-btn:hover{
+  filter: brightness(1.05);
+}
+.container .input-row button#add-btn:active{
+  transform: scale(.98);
+}
+
+/* ========= Task list area ========= */
+.to-do-list{
+  padding: 16px;
+}
+
+.to-do-list > h1{
+  font-size: 14px;
+  letter-spacing:.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+p#update{
+  color: rgba(185,191,220,.92);
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+/* ========= Task card like diary entry cards ========= */
+.to-do-activity{
+  display:flex;
+  align-items:flex-start;
+  gap: 12px;
+
+  padding: 12px 12px 10px;
+  margin: 10px 0;
+
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(30,35,64,.72), rgba(30,35,64,.45));
+  color: var(--ink);
+
+  box-shadow: 0 10px 22px rgba(0,0,0,.25);
+
+  opacity: 0;
+  transform: translateY(10px);
+  animation: taskAppear .25s ease forwards;
+}
+
+@keyframes taskAppear{
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* checkbox styling */
+.to-do-activity input[type="checkbox"]{
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  flex-shrink:0;
+  cursor:pointer;
+}
+
+/* task text */
+.to-do-activity p{
+  margin:0;
+  flex:1;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.35;
+  font-size: 14px;
+  color: rgba(238,240,255,.88);
+}
+
+/* completed state (if you add a class in JS) */
+.to-do-activity.completed{
+  opacity: .82;
+  border-color: rgba(139,123,255,.35);
+  background: linear-gradient(180deg, rgba(139,123,255,.12), rgba(30,35,64,.45));
+}
+.to-do-activity.completed p{
+  text-decoration: line-through;
+  color: rgba(185,191,220,.9);
+}
+
+/* delete button */
+.to-do-activity button{
+  padding: 8px 10px;
+  border:none;
+  border-radius: 12px;
+
+  background: rgba(255,91,122,.12);
+  border: 1px solid rgba(255,91,122,.35);
+  color: var(--ink);
+
+  cursor:pointer;
+  flex-shrink:0;
+  transition: transform .12s ease, background .12s ease;
+}
+.to-do-activity button:hover{
+  background: rgba(255,91,122,.18);
+}
+.to-do-activity button:active{
+  transform: scale(.98);
+}
+
+/* ========= Mobile improvements ========= */
+@media (max-width: 600px){
+  body{ padding: 0 12px 90px; }
+
+  .container{
+    border-radius: 16px;
+  }
+
+  .container .input-row{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .container .input-row button#add-btn{
+    width: 100%;
+    min-width: unset;
+  }
+
+  .daily-wrapper{
+    max-width: 100%;
+    width: 95%;
+    justify-content:flex-start;
+    margin: 10px;
+      gap: 10px;
+      padding: 0;
+      margin-top: 15px;
+  }
+
+  .h1Div h1{
+    font-size: 20px;
+  }
+}
+.h1Div strong {
+	background: white;
+    color: black;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    letter-spacing: 3px;
+}
+#newBtn{
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.15);
+
+  background: linear-gradient(135deg, rgba(139,123,255,.25), rgba(88,214,255,.18));
+  backdrop-filter: blur(6px);
+
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .08em;
+
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+#newBtn:hover{
+  background: linear-gradient(135deg, rgba(139,123,255,.45), rgba(88,214,255,.30));
+  box-shadow: 0 8px 20px rgba(139,123,255,.25);
+}
+
+#newBtn:active{
+  transform: scale(.96);
+}
+
+#doneBtn{
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.15);
+
+  background: red;
+  backdrop-filter: blur(6px);
+
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  display: none;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+#doneBtn:hover{
+  background: darkred;
+  box-shadow: 0 8px 20px rgba(139,123,255,.25);
+}
+
+#doneBtn:active{
+  transform: scale(.96);
+}
+.task-date{
+  color: rgba(214,201,255,.85);
+  font-size: 12px;
+  letter-spacing: .04em;
+  opacity: .9;
+}
